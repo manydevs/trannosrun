@@ -85,8 +85,8 @@ def startgame():
                    large_image='http://cdn.discordapp.com/attachments/832302343268728903/982699191757312000/rpcicon.png',
                    start=epoch)
 
-    mixer.set_volume(0.1)
-    mixer2.set_volume(0.1)
+    mixer.set_volume(0.15)
+    mixer2.set_volume(0.15)
     mixer.play()
 
     class Player(pygame.sprite.Sprite):
@@ -143,7 +143,7 @@ def startgame():
     SOUNDMIX = pygame.USEREVENT + 11
     pygame.time.set_timer(SOUNDMIX, soundmixdelay)
 
-    counter, timer, score, versionname = 0, '0'.rjust(3), '0'.rjust(3), "v0.8"
+    counter, timer, score, versionname = 0, '0'.rjust(3), '0'.rjust(3), "v0.8.1"
     pygame.time.set_timer(pygame.USEREVENT, 1000)
     font = pygame.font.SysFont('Consolas', 30)
 
@@ -330,7 +330,7 @@ def startgame():
                     mixer2.play()
                     mixer.stop()
                     mixer = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\" + ssel1 + ".mp3")
-                    mixer.set_volume(0.1)
+                    mixer.set_volume(0.15)
                     localvar = False
                     if cpr('discord.exe') or cpr('discordptb.exe') or cpr('discordcanary.exe'):
                         RPC.update(state="Highscore: " + str(gscore),
@@ -347,7 +347,7 @@ def startgame():
                     mixer.play()
                     mixer2.stop()
                     mixer2 = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\" + ssel2 + ".mp3")
-                    mixer2.set_volume(0.1)
+                    mixer2.set_volume(0.15)
                     localvar = True
                     if cpr('discord.exe') or cpr('discordptb.exe') or cpr('discordcanary.exe'):
                         RPC.update(state="Highscore: " + str(gscore),
@@ -355,8 +355,9 @@ def startgame():
                                    large_image='http://cdn.discordapp.com/attachments/832302343268728903/982699191757312000/rpcicon.png',
                                    start=epoch)
             if event.type == UPDATESPEED:
-                asprspeed += 1
-                playerspeed += 1
+                if asprspeed < 40 and playerspeed < 40:
+                    asprspeed += 1
+                    playerspeed += 1
 
         prsdkeys = pygame.key.get_pressed()
         player.update(prsdkeys)
@@ -407,7 +408,7 @@ def startgame():
         screen.blit(font.render(timer, True, ('white')), (32, 48))
         score = str(gscore).rjust(3)
         screen.blit(font.render(score, True, ('white')), (screen_width - 132, 48))
-        screen.blit(font.render(versionname, True, ('#00ff00')), (screen_width - 100, screen_height - 50))
+        screen.blit(font.render(versionname, True, ('#00ff00')), (screen_width - 125, screen_height - 50))
         pygame.display.flip()
         clock.tick(72)
 
