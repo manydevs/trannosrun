@@ -53,13 +53,14 @@ def startgame():
                 "Trannos, ATC Taff - Mauro Gyali",
                 "Trannos, Billy Sio - MDMA",
                 "Trannos, Light - Oplo",
-                "Trannos - Industry"]
+                "Trannos - Industry",
+                "Light, Trannos - 24hrs"]
     clock = pygame.time.Clock()
 
-    ssel1 = playlist[random.randint(0, 8)]
-    ssel2 = playlist[random.randint(0, 8)]
+    ssel1 = playlist[random.randint(0, 9)]
+    ssel2 = playlist[random.randint(0, 9)]
     while ssel1 == ssel2:
-        ssel2 = playlist[random.randint(0, 8)]
+        ssel2 = playlist[random.randint(0, 9)]
 
     pygame.mixer.init()
     mixer = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\" + ssel1 + ".mp3")
@@ -320,10 +321,10 @@ def startgame():
                 timer = str(counter).rjust(3) if counter > 0 else 'Boom!'
             if event.type == SOUNDMIX:
                 if localvar:
-                    ssel1 = playlist[random.randint(0, 8)]
-                    ssel2 = playlist[random.randint(0, 8)]
+                    ssel1 = playlist[random.randint(0, 9)]
+                    ssel2 = playlist[random.randint(0, 9)]
                     while ssel1 == ssel2:
-                        ssel2 = playlist[random.randint(0, 8)]
+                        ssel2 = playlist[random.randint(0, 9)]
                     soundmixdelay = int(mixer2.get_length()) * 1000
                     pygame.time.set_timer(SOUNDMIX, soundmixdelay)
                     mixer2.play()
@@ -337,10 +338,10 @@ def startgame():
                                    large_image='http://cdn.discordapp.com/attachments/832302343268728903/982699191757312000/rpcicon.png',
                                    start=epoch)
                 elif not localvar:
-                    ssel1 = playlist[random.randint(0, 8)]
-                    ssel2 = playlist[random.randint(0, 8)]
+                    ssel1 = playlist[random.randint(0, 9)]
+                    ssel2 = playlist[random.randint(0, 9)]
                     while ssel1 == ssel2:
-                        ssel2 = playlist[random.randint(0, 8)]
+                        ssel2 = playlist[random.randint(0, 9)]
                     soundmixdelay = int(mixer.get_length()) * 1000
                     pygame.time.set_timer(SOUNDMIX, soundmixdelay)
                     mixer.play()
