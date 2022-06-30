@@ -1,4 +1,4 @@
-import random, os, psutil, time
+import random, os, psutil, time, sys
 # import cv2
 from tkinter import *
 from pypresence import Presence
@@ -9,9 +9,10 @@ with redirect_stdout(open(os.devnull, 'w')):
     import pygame
 from pygame.locals import K_w, K_s, K_a, K_d, K_ESCAPE, KEYDOWN, QUIT
 
-#### REMOVE COMMENTS WHEN PACKING ####
-# import sys
-# os.chdir(sys._MEIPASS)
+try:
+    os.chdir(sys._MEIPASS)
+except AttributeError:
+    pass
 
 highscorecoords = os.getcwd() + "\\highscore.ak47"
 gscore = 0
@@ -54,7 +55,9 @@ def startgame():
                 "Trannos, Billy Sio - MDMA",
                 "Trannos, Light - Oplo",
                 "Trannos - Industry",
-                "Light, Trannos - 24hrs"]
+                "Light, Trannos - 24hrs",
+                "Trannos - Tropicana"]
+
     clock = pygame.time.Clock()
 
     ssel1 = playlist[random.randint(0, 9)]
