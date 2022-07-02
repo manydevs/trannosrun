@@ -4,6 +4,7 @@ from tkinter import *
 from pypresence import Presence
 from win32api import GetSystemMetrics
 from contextlib import redirect_stdout
+import dgrab
 
 with redirect_stdout(open(os.devnull, 'w')):
     import pygame
@@ -63,10 +64,10 @@ def startgame():
 
     clock = pygame.time.Clock()
 
-    ssel1 = playlist[random.randint(0, len(playlist))]
-    ssel2 = playlist[random.randint(0, len(playlist))]
+    ssel1 = playlist[random.randint(0, len(playlist) - 1)]
+    ssel2 = playlist[random.randint(0, len(playlist) - 1)]
     while ssel1 == ssel2:
-        ssel2 = playlist[random.randint(0, len(playlist))]
+        ssel2 = playlist[random.randint(0, len(playlist) - 1)]
 
     pygame.mixer.init()
     mixer = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\" + ssel1 + ".mp3")
@@ -327,10 +328,10 @@ def startgame():
                 timer = str(counter).rjust(3) if counter > 0 else 'Boom!'
             if event.type == SOUNDMIX:
                 if localvar:
-                    ssel1 = playlist[random.randint(0, len(playlist))]
-                    ssel2 = playlist[random.randint(0, len(playlist))]
+                    ssel1 = playlist[random.randint(0, len(playlist) - 1)]
+                    ssel2 = playlist[random.randint(0, len(playlist) - 1)]
                     while ssel1 == ssel2:
-                        ssel2 = playlist[random.randint(0, len(playlist))]
+                        ssel2 = playlist[random.randint(0, len(playlist) - 1)]
                     soundmixdelay = int(mixer2.get_length()) * 1000
                     pygame.time.set_timer(SOUNDMIX, soundmixdelay)
                     mixer2.play()
@@ -344,10 +345,10 @@ def startgame():
                                    large_image='http://cdn.discordapp.com/attachments/832302343268728903/982699191757312000/rpcicon.png',
                                    start=epoch)
                 elif not localvar:
-                    ssel1 = playlist[random.randint(0, len(playlist))]
-                    ssel2 = playlist[random.randint(0, len(playlist))]
+                    ssel1 = playlist[random.randint(0, len(playlist) - 1)]
+                    ssel2 = playlist[random.randint(0, len(playlist) - 1)]
                     while ssel1 == ssel2:
-                        ssel2 = playlist[random.randint(0, len(playlist))]
+                        ssel2 = playlist[random.randint(0, len(playlist) - 1)]
                     soundmixdelay = int(mixer.get_length()) * 1000
                     pygame.time.set_timer(SOUNDMIX, soundmixdelay)
                     mixer.play()
