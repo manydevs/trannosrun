@@ -9,14 +9,17 @@ with redirect_stdout(open(os.devnull, 'w')):
     import pygame
 from pygame.locals import K_w, K_s, K_a, K_d, K_ESCAPE, KEYDOWN, QUIT
 
+if not os.path.exists(os.getenv('APPDATA') + "\\TrannosRun"):
+    os.mkdir(os.getenv('APPDATA') + "\\TrannosRun")
+
+highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47"
+gscore = 0
+pgame = Tk()
+
 try:
     os.chdir(sys._MEIPASS)
 except AttributeError:
     pass
-
-highscorecoords = os.getcwd() + "\\highscore.ak47"
-gscore = 0
-pgame = Tk()
 
 
 def cpr(p):
