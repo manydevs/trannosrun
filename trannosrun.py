@@ -60,7 +60,8 @@ def startgame():
                 "Trannos, Light - Oplo",
                 "Trannos - Industry",
                 "Light, Trannos - 24hrs",
-                "Trannos - Tropicana"]
+                "Trannos - Tropicana",
+                "ATC Nico, Trannos - Studio"]
 
     clock = pygame.time.Clock()
 
