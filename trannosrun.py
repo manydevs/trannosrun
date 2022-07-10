@@ -4,7 +4,6 @@ from tkinter import *
 from pypresence import Presence
 from win32api import GetSystemMetrics
 from contextlib import redirect_stdout
-import dgrab
 
 with redirect_stdout(open(os.devnull, 'w')):
     import pygame
@@ -61,7 +60,8 @@ def startgame():
                 "Trannos - Industry",
                 "Light, Trannos - 24hrs",
                 "Trannos - Tropicana",
-                "ATC Nico, Trannos - Studio"]
+                "ATC Nico, Trannos - Studio",
+                "FY, Light, Trannos - Obsessed"]
 
     clock = pygame.time.Clock()
 
