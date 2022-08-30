@@ -1,12 +1,14 @@
 import random, os, psutil, time, sys
 # import cv2
 from tkinter import *
+from tkinter.messagebox import showwarning as tromokratia
 from pypresence import Presence
 from win32api import GetSystemMetrics
 from contextlib import redirect_stdout
 
 with redirect_stdout(open(os.devnull, 'w')):
     import pygame
+
 from pygame.locals import K_w, K_s, K_a, K_d, K_ESCAPE, KEYDOWN, QUIT
 
 if not os.path.exists(os.getenv('APPDATA') + "\\TrannosRun"):
@@ -33,11 +35,21 @@ def cpr(p):
 
 
 if cpr('discord.exe') or cpr('discordptb.exe') or cpr('discordcanary.exe'):
-    RPC = Presence(982695479731191878)
     try:
+        RPC = Presence(982695479731191878)
         RPC.connect()
     except:
-        exit("Could not connect to Discord RPC Service!")
+        tromokratia("PyPresence: Connection Error", "PyPresence cannot hook to your Discord client.\n"
+                                                    "This usually happens when you have no internet connection "
+                                                    "and the Discord client is running.\n"
+                                                    "TrannosRun will continue running now. To avoid errors like "
+                                                    "this in the future, close all Discord instances before "
+                                                    "running TrannosRun.")
+
+
+        class RPC:
+            def update(state, details, large_image, start):
+                pass
 
 
 def startgame():
@@ -61,7 +73,10 @@ def startgame():
                 "Light, Trannos - 24hrs",
                 "Trannos - Tropicana",
                 "ATC Nico, Trannos - Studio",
-                "FY, Light, Trannos - Obsessed"]
+                "FY, Light, Trannos - Obsessed",
+                "Dirty Harry, Trannos - YAYO",
+                "Leaderbrain, Trannos - Made In Albania",
+                "Trannos, Eleni Foureira - Egw & Esy"]
 
     clock = pygame.time.Clock()
 
@@ -151,7 +166,7 @@ def startgame():
     SOUNDMIX = pygame.USEREVENT + 11
     pygame.time.set_timer(SOUNDMIX, soundmixdelay)
 
-    counter, timer, score, versionname = 0, '0'.rjust(3), '0'.rjust(3), "v0.8.1"
+    counter, timer, score, versionname = 0, '0'.rjust(3), '0'.rjust(3), "v0.8.2"
     pygame.time.set_timer(pygame.USEREVENT, 1000)
     font = pygame.font.SysFont('Consolas', 30)
 
@@ -229,7 +244,7 @@ def startgame():
 
     def whencollected():
         global gscore
-        collectsound.set_volume(0.05)
+        collectsound.set_volume(0.03)
         collectsound.play(0)
         gscore += 1
 
