@@ -70,15 +70,12 @@ playlist = ["Trannos, ATC Nico - AMG",
 
 ssel1 = playlist[random.randint(0, len(playlist) - 1)]
 ssel2 = playlist[random.randint(0, len(playlist) - 1)]
-while ssel1 == ssel2:
-    ssel2 = playlist[random.randint(0, len(playlist) - 1)]
 
 mixer = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\" + ssel1 + ".mp3")
-soundmixdelay = int(mixer.get_length()) * 1000
 mixer2 = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\" + ssel2 + ".mp3")
+soundmixdelay = int(mixer.get_length()) * 1000
 
 mixer.set_volume(0.15)
-mixer2.set_volume(0.15)
 mixer.play()
 pygame.init()
 SOUNDMIX = pygame.USEREVENT + 1
@@ -88,8 +85,7 @@ localvar = True
 
 
 while True:
-    if not cpr('trannosrun.exe'):
-        exit()
+
     if not os.path.isfile(highscorecoords):
         open(highscorecoords, "x")
         with open(highscorecoords, 'w') as f:
@@ -113,27 +109,23 @@ while True:
     for event in pygame.event.get():
         if event.type == SOUNDMIX:
             if localvar:
-                ssel1 = playlist[random.randint(0, len(playlist) - 1)]
                 ssel2 = playlist[random.randint(0, len(playlist) - 1)]
                 while ssel1 == ssel2:
                     ssel2 = playlist[random.randint(0, len(playlist) - 1)]
+                mixer2 = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\" + ssel2 + ".mp3")
                 soundmixdelay = int(mixer2.get_length()) * 1000
                 pygame.time.set_timer(SOUNDMIX, soundmixdelay)
                 mixer2.play()
                 mixer.stop()
-                mixer = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\" + ssel1 + ".mp3")
-                mixer.set_volume(0.15)
                 localvar = False
 
             elif not localvar:
                 ssel1 = playlist[random.randint(0, len(playlist) - 1)]
-                ssel2 = playlist[random.randint(0, len(playlist) - 1)]
                 while ssel1 == ssel2:
-                    ssel2 = playlist[random.randint(0, len(playlist) - 1)]
+                    ssel1 = playlist[random.randint(0, len(playlist) - 1)]
+                mixer = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\" + ssel1 + ".mp3")
                 soundmixdelay = int(mixer.get_length()) * 1000
                 pygame.time.set_timer(SOUNDMIX, soundmixdelay)
                 mixer.play()
                 mixer2.stop()
-                mixer2 = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\" + ssel2 + ".mp3")
-                mixer2.set_volume(0.15)
                 localvar = True
