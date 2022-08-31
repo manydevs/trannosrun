@@ -1,116 +1,56 @@
-import random, os, psutil, time, sys
+import random, os, shutil, sys
 # import cv2
+import subprocess
 from tkinter import *
-from tkinter.messagebox import showwarning as tromokratia
-from pypresence import Presence
 from win32api import GetSystemMetrics
 from contextlib import redirect_stdout
+import pyglet
 
 with redirect_stdout(open(os.devnull, 'w')):
     import pygame
 
 from pygame.locals import K_w, K_s, K_a, K_d, K_ESCAPE, KEYDOWN, QUIT
 
+
 if not os.path.exists(os.getenv('APPDATA') + "\\TrannosRun"):
     os.mkdir(os.getenv('APPDATA') + "\\TrannosRun")
 
 highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47"
+scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.ak47"
 gscore = 0
 pgame = Tk()
 
 try:
     os.chdir(sys._MEIPASS)
-except AttributeError:
+    for x in os.listdir(os.getenv('TEMP')):
+        if x.startswith('_MEI') and not os.getenv('TEMP') + "\\" + x == sys._MEIPASS:
+            shutil.rmtree(os.getenv('TEMP') + "\\" + x)
+except (AttributeError or PermissionError):
     pass
 
 
-def cpr(p):
-    for proc in psutil.process_iter():
-        try:
-            if p.lower() in proc.name().lower():
-                return True
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            pass
-    return False
-
-
-if cpr('discord.exe') or cpr('discordptb.exe') or cpr('discordcanary.exe'):
-    try:
-        RPC = Presence(982695479731191878)
-        RPC.connect()
-    except:
-        tromokratia("PyPresence: Connection Error", "PyPresence cannot hook to your Discord client.\n"
-                                                    "This usually happens when you have no internet connection "
-                                                    "and the Discord client is running.\n"
-                                                    "TrannosRun will continue running now. To avoid errors like "
-                                                    "this in the future, close all Discord instances before "
-                                                    "running TrannosRun.")
-
-
-        class RPC:
-            def update(state, details, large_image, start):
-                pass
-
-
 def startgame():
-    global gscore, pgame, highscorecoords
+    global gscore, pgame, highscorecoords, scorecoords
     asprspeed = 5
     playerspeed = 7
-    epoch = int(time.time())
     pgame.destroy()
     gscore = 0
 
     thepath = os.getcwd() + "\\assets\\"
-    playlist = ["Trannos, ATC Nico - AMG",
-                "Trannos - Coco",
-                "Trannos - Dolce",
-                "Trannos - Ibiza",
-                "Kings, Trannos - Madame",
-                "Trannos, ATC Taff - Mauro Gyali",
-                "Trannos, Billy Sio - MDMA",
-                "Trannos, Light - Oplo",
-                "Trannos - Industry",
-                "Light, Trannos - 24hrs",
-                "Trannos - Tropicana",
-                "ATC Nico, Trannos - Studio",
-                "FY, Light, Trannos - Obsessed",
-                "Dirty Harry, Trannos - YAYO",
-                "Leaderbrain, Trannos - Made In Albania",
-                "Trannos, Eleni Foureira - Egw & Esy"]
 
     clock = pygame.time.Clock()
-
-    ssel1 = playlist[random.randint(0, len(playlist) - 1)]
-    ssel2 = playlist[random.randint(0, len(playlist) - 1)]
-    while ssel1 == ssel2:
-        ssel2 = playlist[random.randint(0, len(playlist) - 1)]
-
-    pygame.mixer.init()
-    mixer = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\" + ssel1 + ".mp3")
-    soundmixdelay = int(mixer.get_length()) * 1000
-    mixer2 = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\" + ssel2 + ".mp3")
-    collectsound = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\collect.mp3")
 
     if not os.path.isfile(highscorecoords):
         open(highscorecoords, "x")
         with open(highscorecoords, 'w') as f:
             with redirect_stdout(f):
                 print(0)
-        with open(highscorecoords) as f:
-            getlastscore = int(f.read())
-    else:
-        with open(highscorecoords) as f:
-            getlastscore = int(f.read())
 
-    if cpr('discord.exe') or cpr('discordptb.exe') or cpr('discordcanary.exe'):
-        RPC.update(state="Highscore: " + str(getlastscore),
-                   details="Listening to: " + ssel1,
-                   large_image='http://cdn.discordapp.com/attachments/832302343268728903/982699191757312000/rpcicon.png',
-                   start=epoch)
-
-    mixer.set_volume(0.15)
-    mixer2.set_volume(0.15)
-    mixer.play()
+    if not os.path.isfile(scorecoords):
+        open(scorecoords, "x")
+        with open(scorecoords, 'w') as f:
+            with redirect_stdout(f):
+                print(0)
 
     class Player(pygame.sprite.Sprite):
         def __init__(self):
@@ -163,10 +103,8 @@ def startgame():
                 self.kill()
 
     pygame.init()
-    SOUNDMIX = pygame.USEREVENT + 11
-    pygame.time.set_timer(SOUNDMIX, soundmixdelay)
 
-    counter, timer, score, versionname = 0, '0'.rjust(3), '0'.rjust(3), "v0.8.2"
+    counter, timer, score, versionname = 0, '0'.rjust(3), '0'.rjust(3), "v0.9"
     pygame.time.set_timer(pygame.USEREVENT, 1000)
     font = pygame.font.SysFont('Consolas', 30)
 
@@ -240,13 +178,14 @@ def startgame():
     all_sprites = pygame.sprite.Group()
     all_sprites.add(player)
     run = True
-    localvar = True
 
     def whencollected():
         global gscore
-        collectsound.set_volume(0.03)
-        collectsound.play(0)
+        pyglet.resource.media("collect.wav").play()
         gscore += 1
+        with open(scorecoords, 'w') as f:
+            with redirect_stdout(f):
+                print(gscore)
 
     while run:
         for event in pygame.event.get():
@@ -342,41 +281,6 @@ def startgame():
             if event.type == pygame.USEREVENT:
                 counter += 1
                 timer = str(counter).rjust(3) if counter > 0 else 'Boom!'
-            if event.type == SOUNDMIX:
-                if localvar:
-                    ssel1 = playlist[random.randint(0, len(playlist) - 1)]
-                    ssel2 = playlist[random.randint(0, len(playlist) - 1)]
-                    while ssel1 == ssel2:
-                        ssel2 = playlist[random.randint(0, len(playlist) - 1)]
-                    soundmixdelay = int(mixer2.get_length()) * 1000
-                    pygame.time.set_timer(SOUNDMIX, soundmixdelay)
-                    mixer2.play()
-                    mixer.stop()
-                    mixer = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\" + ssel1 + ".mp3")
-                    mixer.set_volume(0.15)
-                    localvar = False
-                    if cpr('discord.exe') or cpr('discordptb.exe') or cpr('discordcanary.exe'):
-                        RPC.update(state="Highscore: " + str(gscore),
-                                   details="Listening to: " + ssel2,
-                                   large_image='http://cdn.discordapp.com/attachments/832302343268728903/982699191757312000/rpcicon.png',
-                                   start=epoch)
-                elif not localvar:
-                    ssel1 = playlist[random.randint(0, len(playlist) - 1)]
-                    ssel2 = playlist[random.randint(0, len(playlist) - 1)]
-                    while ssel1 == ssel2:
-                        ssel2 = playlist[random.randint(0, len(playlist) - 1)]
-                    soundmixdelay = int(mixer.get_length()) * 1000
-                    pygame.time.set_timer(SOUNDMIX, soundmixdelay)
-                    mixer.play()
-                    mixer2.stop()
-                    mixer2 = pygame.mixer.Sound(os.getcwd() + "\\s-assets\\" + ssel2 + ".mp3")
-                    mixer2.set_volume(0.15)
-                    localvar = True
-                    if cpr('discord.exe') or cpr('discordptb.exe') or cpr('discordcanary.exe'):
-                        RPC.update(state="Highscore: " + str(gscore),
-                                   details="Listening to: " + ssel1,
-                                   large_image='http://cdn.discordapp.com/attachments/832302343268728903/982699191757312000/rpcicon.png',
-                                   start=epoch)
             if event.type == UPDATESPEED:
                 if asprspeed < 40 and playerspeed < 40:
                     asprspeed += 1
@@ -430,8 +334,9 @@ def startgame():
 
         screen.blit(font.render(timer, True, ('white')), (32, 48))
         score = str(gscore).rjust(3)
+
         screen.blit(font.render(score, True, ('white')), (screen_width - 132, 48))
-        screen.blit(font.render(versionname, True, ('#00ff00')), (screen_width - 125, screen_height - 50))
+        screen.blit(font.render(versionname, True, ('#00ff00')), (screen_width - 120, screen_height - 50))
         pygame.display.flip()
         clock.tick(72)
 
@@ -448,14 +353,20 @@ def startgame():
         with open(highscorecoords) as f:
             tempscore = int(f.read())
         if tempscore < gscore:
+            endtext = "New high score: " + str(gscore)
             with open(highscorecoords, 'w') as f:
                 with redirect_stdout(f):
                     print(gscore)
+        else:
+            endtext = "Score: " + str(gscore) + " | Highscore: " + str(tempscore)
 
         phimage = PhotoImage(file=thepath + 'xamene.png')
 
-        wp = Label(pgame, text='Well played', background='#87807E', font=('Arial 25 bold'), foreground='black')
+        wp = Label(pgame, text="Well played!", background='#87807E', font=('Arial 25 bold'), foreground='black')
         wp.place(x=310, y=20)
+
+        wp2 = Label(pgame, text=endtext, background='#87807E', font=('Arial', 12), foreground='black')
+        wp2.place(x=320, y=65)
 
         xamenos = Label(pgame, image=phimage, background='#87807E', font=('Arial 15 bold'), foreground='black')
         xamenos.place(x=200, y=100)
@@ -471,5 +382,21 @@ def startgame():
 
         pgame.mainloop()
 
+
+shutil.copy2(os.getcwd() + "\\assets\\python.exe", os.getcwd())
+shutil.copy2(os.getcwd() + "\\assets\\trmusic.py", os.getcwd())
+shutil.copy2(os.getcwd() + "\\s-assets\\collect.wav", os.getcwd())
+
+pyglet.resource.media("collect.wav").play()
+
+if not os.path.isfile(os.getcwd() + "\\trnsnd.bat"):
+    open(os.getcwd() + "\\trnsnd.bat", "x")
+with open(os.getcwd() + "\\trnsnd.bat", 'w') as f:
+    with redirect_stdout(f):
+        print("@echo off\nstart /b /min cmd /q /c " + os.getcwd() + "\\python.exe " + os.getcwd() + "\\trmusic.py")
+
+si = subprocess.STARTUPINFO()
+si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+subprocess.call(os.getcwd() + "\\trnsnd.bat", startupinfo=si)
 
 startgame()
