@@ -85,7 +85,8 @@ localvar = True
 
 
 while True:
-
+    if not cpr('trannosrun.exe'):
+        exit()
     if not os.path.isfile(highscorecoords):
         open(highscorecoords, "x")
         with open(highscorecoords, 'w') as f:
