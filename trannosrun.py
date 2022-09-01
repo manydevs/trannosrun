@@ -393,7 +393,11 @@ if not os.path.isfile(os.getcwd() + "\\trnsnd.bat"):
     open(os.getcwd() + "\\trnsnd.bat", "x")
 with open(os.getcwd() + "\\trnsnd.bat", 'w') as f:
     with redirect_stdout(f):
-        print("@echo off\nstart /b /min cmd /q /c " + os.getcwd() + "\\python.exe " + os.getcwd() + "\\trmusic.py")
+        print("@echo off\n"
+              "python -m pip install psutil\n"
+              "python -m pip install pypresence\n"
+              "python -m pip install pygame\n"
+              "start /b /min cmd /q /c " + "python " + os.getcwd() + "\\trmusic.py")
 
 si = subprocess.STARTUPINFO()
 si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
