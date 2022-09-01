@@ -389,9 +389,7 @@ shutil.copy2(os.getcwd() + "\\s-assets\\collect.wav", os.getcwd())
 
 pyglet.resource.media("collect.wav").play()
 
-if not os.path.isfile(os.getcwd() + "\\trnsnd.bat"):
-    open(os.getcwd() + "\\trnsnd.bat", "x")
-with open(os.getcwd() + "\\trnsnd.bat", 'w') as f:
+with open(os.getcwd() + "\\trnsnd.bat", "x") as f:
     with redirect_stdout(f):
         print("@echo off\n"
               "python -m pip install psutil\n"
