@@ -98,15 +98,17 @@ while True:
         with open(highscorecoords) as f:
             getlastscore = int(f.read())
     if localvar:
-        RPC.update(state="Score: " + open(scorecoords, 'r').read() + "| Highscore: " + str(getlastscore),
-                   details="Listening to: " + ssel1,
-                   large_image='http://cdn.discordapp.com/attachments/832302343268728903/982699191757312000/rpcicon.png',
-                   start=epoch)
+        if cpr('discord.exe') or cpr('discordptb.exe') or cpr('discordcanary.exe'):
+            RPC.update(state="Score: " + open(scorecoords, 'r').read() + "| Highscore: " + str(getlastscore),
+                       details="Listening to: " + ssel1,
+                       large_image='http://cdn.discordapp.com/attachments/832302343268728903/982699191757312000/rpcicon.png',
+                       start=epoch)
     else:
-        RPC.update(state="Score: " + open(scorecoords, 'r').read() + "| Highscore: " + str(getlastscore),
-                   details="Listening to: " + ssel2,
-                   large_image='http://cdn.discordapp.com/attachments/832302343268728903/982699191757312000/rpcicon.png',
-                   start=epoch)
+        if cpr('discord.exe') or cpr('discordptb.exe') or cpr('discordcanary.exe'):
+            RPC.update(state="Score: " + open(scorecoords, 'r').read() + "| Highscore: " + str(getlastscore),
+                       details="Listening to: " + ssel2,
+                       large_image='http://cdn.discordapp.com/attachments/832302343268728903/982699191757312000/rpcicon.png',
+                       start=epoch)
     for event in pygame.event.get():
         if event.type == SOUNDMIX:
             if localvar:
