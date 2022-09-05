@@ -4,6 +4,9 @@ from tkinter import *
 from win32api import GetSystemMetrics
 from contextlib import redirect_stdout
 import pyglet
+import requests
+from tkinter.messagebox import (askyesno, showinfo)
+import urllib.request
 
 with redirect_stdout(open(os.devnull, 'w')):
     import pygame
@@ -13,18 +16,44 @@ from pygame.locals import K_w, K_s, K_a, K_d, K_ESCAPE, KEYDOWN, QUIT
 if not os.path.exists(os.getenv('APPDATA') + "\\TrannosRun"):
     os.mkdir(os.getenv('APPDATA') + "\\TrannosRun")
 
-highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47"
-scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.ak47"
-
 if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
     open(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass", "x")
 
-gscore = 0
+if os.path.isfile("setup.exe"):
+    os.remove("setup.exe")
+
+highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47"
+scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.ak47"
+
+gscore, curver = 0, "v0.9.1"
 pgame = Tk()
 
 
+def stopplayback():
+    os.remove(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass")
+    sys.exit()
+
+
+try:
+    response = requests.get("https://api.github.com/repos/manydevs/trannosrun/releases/latest")
+    trver = (response.json()["name"]).replace("TrannosRun ", "")
+    trlink = response.json()["assets"][0]["browser_download_url"]
+    if not curver == trver:
+        if askyesno("Updates available", "TrannosRun detected it has updates available.\nCurrent version: "
+                                         + curver + "\nNew version: " + trver):
+            pgame.destroy()
+            showinfo("Connection established", 'The requested version "' + trver +
+                     '" will start downloading and will run after closing this info box. '
+                     'Thanks for playing TrannosRun!')
+            urllib.request.urlretrieve(trlink, "setup.exe")
+            os.system('start /b cmd /c "' + os.getcwd() + '\\setup.exe"')
+            stopplayback()
+except requests.exceptions.ConnectionError:
+    pass
+
+
 def startgame():
-    global gscore, pgame, highscorecoords, scorecoords
+    global gscore, pgame, highscorecoords, scorecoords, curver
     asprspeed = 5
     playerspeed = 7
     pgame.destroy()
@@ -98,7 +127,7 @@ def startgame():
 
     pygame.init()
 
-    counter, timer, score, versionname = 0, '0'.rjust(3), '0'.rjust(3), "v0.9.1"
+    counter, timer, score, versionname = 0, '0'.rjust(3), '0'.rjust(3), curver
     pygame.time.set_timer(pygame.USEREVENT, 1000)
     font = pygame.font.SysFont('Consolas', 30)
 
@@ -180,10 +209,6 @@ def startgame():
         with open(scorecoords, 'w') as f:
             with redirect_stdout(f):
                 print(gscore)
-
-    def stopplayback():
-        os.remove(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass")
-        sys.exit()
 
     while run:
         for event in pygame.event.get():
@@ -342,7 +367,7 @@ def startgame():
     if not run:
         pygame.quit()
         pgame = Tk()
-        pgame.focus()
+        pgame.focus_force()
         pgame.resizable(False, False)
         pgame.title('TrannosRun')
         pgame.configure(bg='#87807E')
