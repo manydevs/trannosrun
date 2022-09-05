@@ -2,7 +2,6 @@ import os
 import random
 import psutil
 import time
-import sys
 from tkinter.messagebox import showwarning as tromokratia
 from contextlib import redirect_stdout
 from pypresence import Presence
@@ -10,12 +9,7 @@ from pypresence import Presence
 with redirect_stdout(open(os.devnull, 'w')):
     import pygame
 
-if getattr(sys, 'frozen', False):
-    truepath = os.path.dirname(sys.executable)
-else:
-    truepath = os.getcwd()
-
-soundloc = truepath + "\\s-assets"
+soundloc = os.getcwd() + "\\s-assets"
 globalvolume = 0.20
 
 
