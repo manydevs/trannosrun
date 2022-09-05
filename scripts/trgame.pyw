@@ -3,10 +3,10 @@ import random, os, sys
 from tkinter import *
 from win32api import GetSystemMetrics
 from contextlib import redirect_stdout
-import pyglet
 import requests
 from tkinter.messagebox import (askyesno, showinfo)
 import urllib.request
+import subprocess
 
 with redirect_stdout(open(os.devnull, 'w')):
     import pygame
@@ -25,8 +25,9 @@ if os.path.isfile("setup.exe"):
 highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47"
 scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.ak47"
 
-gscore, curver = 0, "v0.9.1"
+gscore, curver = 0, "v0.9.2-b"
 pgame = Tk()
+
 
 
 def stopplayback():
@@ -40,13 +41,15 @@ try:
     trlink = response.json()["assets"][0]["browser_download_url"]
     if not curver == trver:
         if askyesno("Updates available", "TrannosRun detected it has updates available.\nCurrent version: "
-                                         + curver + "\nNew version: " + trver):
+                                         + curver + "\nNew version: " + trver + "\nDo you want to download them?"):
             pgame.destroy()
             showinfo("Connection established", 'The requested version "' + trver +
                      '" will start downloading and will run after closing this info box. '
                      'Thanks for playing TrannosRun!')
             urllib.request.urlretrieve(trlink, "setup.exe")
-            os.system('start /b cmd /c "' + os.getcwd() + '\\setup.exe"')
+            si = subprocess.STARTUPINFO()
+            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            subprocess.call('start /b cmd /c "' + os.getcwd() + '\\setup.exe"', startupinfo=si)
             stopplayback()
 except requests.exceptions.ConnectionError:
     pass
@@ -127,7 +130,7 @@ def startgame():
 
     pygame.init()
 
-    counter, timer, score, versionname = 0, '0'.rjust(3), '0'.rjust(3), curver
+    counter, timer, score = 0, '0'.rjust(3), '0'.rjust(3)
     pygame.time.set_timer(pygame.USEREVENT, 1000)
     font = pygame.font.SysFont('Consolas', 30)
 
@@ -201,10 +204,11 @@ def startgame():
     all_sprites = pygame.sprite.Group()
     all_sprites.add(player)
     run = True
+    pygame.mixer.init()
 
     def whencollected():
         global gscore
-        pyglet.resource.media("collect.wav").play()
+        pygame.mixer.Sound("collect.wav").play()
         gscore += 1
         with open(scorecoords, 'w') as f:
             with redirect_stdout(f):
@@ -360,7 +364,7 @@ def startgame():
         score = str(gscore).rjust(3)
 
         screen.blit(font.render(score, True, ('white')), (screen_width - 132, 48))
-        screen.blit(font.render(versionname, True, ('#00ff00')), (screen_width - 150, screen_height - 50))
+        screen.blit(font.render(curver, True, ('#00ff00')), (screen_width - 150, screen_height - 50))
         pygame.display.flip()
         clock.tick(72)
 
@@ -400,7 +404,7 @@ def startgame():
         def playonenter(event):
             startgame()
 
-        pgame.bind("<Return>", playonenter)
+        pgame.bind("<space>", playonenter)
 
         btn = Button(pgame, text='Play again', background='white', font=('Arial 20 bold'), foreground='black',
                      command=startgame)
@@ -409,5 +413,4 @@ def startgame():
         pgame.mainloop()
 
 
-pyglet.resource.media("collect.wav").play()
 startgame()
