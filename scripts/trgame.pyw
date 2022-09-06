@@ -6,7 +6,6 @@ from contextlib import redirect_stdout
 import requests
 from tkinter.messagebox import (askyesno, showinfo)
 import urllib.request
-import subprocess
 
 with redirect_stdout(open(os.devnull, 'w')):
     import pygame
@@ -29,7 +28,6 @@ gscore, curver = 0, "v0.9.2-b"
 pgame = Tk()
 
 
-
 def stopplayback():
     os.remove(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass")
     sys.exit()
@@ -47,9 +45,8 @@ try:
                      '" will start downloading and will run after closing this info box. '
                      'Thanks for playing TrannosRun!')
             urllib.request.urlretrieve(trlink, "setup.exe")
-            si = subprocess.STARTUPINFO()
-            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            subprocess.call('start /b cmd /c ' + os.getcwd() + '\\setup.exe', startupinfo=si)
+            os.system('start cmd /c "echo --- ManyDevs\' TrannosRun Setup Launcher --- '
+                      '& color 0a & echo You can close this window safely. & ' + os.getcwd() + '\\setup.exe"')
             stopplayback()
 except requests.exceptions.ConnectionError:
     pass
