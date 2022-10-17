@@ -29,6 +29,9 @@ soundmixdelay = int(mixer.get_length()) * 1000
 mixer.set_volume(globalvolume)
 mixer.play()
 pygame.init()
+with open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "w") as currm:
+            with redirect_stdout(currm):
+                print(ssel1)
 SOUNDMIX = pygame.USEREVENT + 1
 pygame.time.set_timer(SOUNDMIX, soundmixdelay)
 localvar = True
