@@ -39,9 +39,6 @@ while True:
     if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
         sys.exit()
     if localvar:
-        with open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "w") as currm:
-            with redirect_stdout(currm):
-                print(ssel1)
         if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\voldown"):
             if not fakevolume <= 0:
                 fakevolume -= 10
@@ -95,6 +92,9 @@ while True:
             mixer2.play()
             mixer.stop()
             localvar = False
+            with open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "w") as currm:
+                with redirect_stdout(currm):
+                    print(ssel2)
 
         elif not localvar:
             ssel1 = playlist[random.randint(0, len(playlist) - 1)]
@@ -107,6 +107,10 @@ while True:
             mixer.play()
             mixer2.stop()
             localvar = True
+            with open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "w") as currm:
+                with redirect_stdout(currm):
+                    print(ssel1)
+                
         os.remove(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack")
     for event in pygame.event.get():
         if event.type == SOUNDMIX:
@@ -121,6 +125,9 @@ while True:
                 mixer2.play()
                 mixer.stop()
                 localvar = False
+                with open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "w") as currm:
+                    with redirect_stdout(currm):
+                        print(ssel2)
 
             elif not localvar:
                 ssel1 = playlist[random.randint(0, len(playlist) - 1)]
@@ -133,3 +140,6 @@ while True:
                 mixer.play()
                 mixer2.stop()
                 localvar = True
+                with open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "w") as currm:
+                    with redirect_stdout(currm):
+                        print(ssel1)
