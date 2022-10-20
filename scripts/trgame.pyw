@@ -68,7 +68,7 @@ try:
                       '& color 0a '
                       '& echo The installer will start shortly and this window should close itself. '
                       '& start /b ' + os.getcwd() + '\\setup.exe '
-                      '& exit')
+                                                    '& exit')
             stopplayback()
 except requests.exceptions.ConnectionError:
     pass
@@ -436,10 +436,32 @@ def startgame():
         xamenos = Label(pgame, image=xamenosprep, background='#87807E')
         xamenos.pack()
 
+        lbl = Label(pgame, text="Now playing: " +
+                                open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47").read().strip() +
+                                " | Volume " + open(os.getenv('APPDATA') + "\\TrannosRun\\volume").read().strip() +
+                                "% (Not updating)",
+                    background='#87807E', font=('Arial', 9, "bold"), foreground='#000000')
+        lbl.pack()
+
         def playonenter(event):
             startgame()
 
+        def tkvolup(event):
+            if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\volup"):
+                open(os.getenv('APPDATA') + "\\TrannosRun\\volup", "x")
+
+        def tkvoldown(event):
+            if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\voldown"):
+                open(os.getenv('APPDATA') + "\\TrannosRun\\voldown", "x")
+
+        def tkskip(event):
+            if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack"):
+                open(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack", "x")
+
         pgame.bind("<space>", playonenter)
+        pgame.bind("c", tkvolup)
+        pgame.bind("v", tkvoldown)
+        pgame.bind("g", tkskip)
         pgame.mainloop()
 
 
