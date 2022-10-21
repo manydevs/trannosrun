@@ -35,7 +35,7 @@ highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47"
 scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.ak47"
 thepath = os.getcwd() + "\\assets\\"
 
-gscore, curver = 0, "v0.9.3-b"
+gscore, curver = 0, "v0.9.3-c"
 pgame = Tk()
 
 
@@ -48,7 +48,6 @@ def stopplayback():
 try:
     response = requests.get("https://api.github.com/repos/manydevs/trannosrun/releases/latest")
     trver = (response.json()["name"]).replace("TrannosRun ", "")
-    trlink = response.json()["assets"][0]["browser_download_url"]
     if not curver == trver:
         pgame.title("TrannosRun: Pre-Loading Phase")
         Label(pgame, text="A message box is interrupting TrannosRun's initialization. Interact with it to continue.",
@@ -60,9 +59,9 @@ try:
                 os.remove(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass")
             pgame.destroy()
             showinfo("Connection established", 'The requested version "' + trver +
-                     '" will start downloading and will run after closing this info box. '
-                     'Thanks for playing TrannosRun!')
-            urllib.request.urlretrieve(trlink, "setup.exe")
+                     '" will start downloading and will run after closing this info box. Note that it may take some '
+                     'time for the installer to download. Thanks for playing TrannosRun!')
+            urllib.request.urlretrieve(response.json()["assets"][0]["browser_download_url"], "setup.exe")
             os.system('start cmd /c "echo '
                       '--- ManyDevs\' TrannosRun Setup Launcher --- '
                       '& color 0a '
@@ -187,7 +186,7 @@ def startgame():
     # resized = cv2.resize(video_image, (screen_width, screen_height), interpolation=cv2.INTER_AREA)
     # video_surf = pygame.image.frombuffer(resized.tobytes(), resized.shape[1::-1], "BGR")
 
-    pygame.display.set_caption('TrannosRun')
+    pygame.display.set_caption('TrannosRun ' + curver.replace("v", ""))
     pygame.display.set_icon(pygame.image.load(thepath + 'mavro_jet.ico'))
 
     player = Player()
@@ -408,7 +407,7 @@ def startgame():
         center(pgame)
         pgame.focus_force()
         pgame.resizable(False, False)
-        pgame.title('TrannosRun')
+        pgame.title('TrannosRun ' + curver.replace("v", ""))
         pgame.configure(bg='#87807E')
         pgame.iconbitmap(thepath + 'mavro_jet.ico')
 
@@ -418,8 +417,9 @@ def startgame():
             tempscore = int(f.read())
         if tempscore < gscore:
             endtext = "New high score: " + str(gscore)
-            Label(pgame, text="(Tip: Press Spacebar to play again)", background='#87807E', font=('Arial', 14, "bold"),
-                  foreground='#ffff00').pack()
+            if gscore == tempscore:
+                Label(pgame, text="(Tip: Press Spacebar to play again)", background='#87807E',
+                      font=('Arial', 14, "bold"), foreground='#ffff00').pack()
             with open(highscorecoords, 'w') as f:
                 with redirect_stdout(f):
                     print(gscore)
@@ -436,7 +436,7 @@ def startgame():
         xamenos = Label(pgame, image=xamenosprep, background='#87807E')
         xamenos.pack()
 
-        lbl = Label(pgame, text="Now playing: " +
+        lbl = Label(pgame, text="Was playing: " +
                                 open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47").read().strip() +
                                 " | Volume " + open(os.getenv('APPDATA') + "\\TrannosRun\\volume").read().strip() +
                                 "% (Not updating)",
