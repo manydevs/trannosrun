@@ -10,6 +10,6 @@ Normally, in this directory should be a Python runtime. However, it would make m
 8) In a cmd window, type: {what you copied} -m pip install pygame
 			  		       pip install pypresence
 					       pip install pywin32
-					       pip install pyglet
+					       pip install requests
 					       pip install psutil
 9) Run "trannosrun.py".
