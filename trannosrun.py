@@ -8,7 +8,7 @@ if getattr(sys, 'frozen', False):
 else:
     truepath = os.getcwd()
 
-with open(os.getcwd() + "\\trnsnd.bat", "x") as f:
+with open(os.getcwd() + "\\launcher.bat", "x") as f:
     with redirect_stdout(f):
         print('@echo off\n'
               'start /b cmd /c ' + truepath + '\\env\\pythonw.exe ' + truepath + '\\scripts\\trgame.pyw\n'
