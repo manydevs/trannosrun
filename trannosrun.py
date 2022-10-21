@@ -10,7 +10,7 @@ else:
 
 with open(os.getcwd() + "\\launcher.bat", "x") as f:
     with redirect_stdout(f):
-        print('@echo off\n'
+        print('@echo off\ncd scripts\n'
               'start /b cmd /c ' + truepath + '\\env\\pythonw.exe ' + truepath + '\\scripts\\trgame.pyw\n'
               'start /b cmd /c ' + truepath + '\\env\\pythonw.exe ' + truepath + '\\scripts\\trmusic.pyw\n'
               'start /b cmd /c ' + truepath + '\\env\\pythonw.exe ' + truepath + '\\scripts\\trpresence.pyw')
