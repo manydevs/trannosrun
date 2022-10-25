@@ -415,11 +415,11 @@ def startgame():
 
         with open(highscorecoords) as f:
             tempscore = int(f.read())
-        if tempscore < gscore:
-            endtext = "New high score: " + str(gscore)
-            if gscore == tempscore:
+        if 0 == tempscore:
                 Label(pgame, text="(Tip: Press Spacebar to play again)", background='#87807E',
                       font=('Arial', 14, "bold"), foreground='#ffff00').pack()
+        if tempscore < gscore:
+            endtext = "New high score: " + str(gscore)
             with open(highscorecoords, 'w') as f:
                 with redirect_stdout(f):
                     print(gscore)
