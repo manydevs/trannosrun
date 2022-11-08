@@ -33,6 +33,7 @@ def startgame(hasmusic):
     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     subprocess.call(truepath + "\\silentcmd.exe " + truepath + "\\launcher.bat", startupinfo=si)
     os.remove(truepath + "\\launcher.bat")
+    
 
 
 try:
