@@ -3,7 +3,6 @@ import psutil
 from tkinter.messagebox import showwarning as tromokratia
 import time
 import os
-import sys
 from contextlib import redirect_stdout
 
 
@@ -59,4 +58,4 @@ while True:
         RPC.update(state="Score: " + open(scorecoords, 'r').read().strip() + " | Highscore: " + str(getlastscore),
                    details="Listening to: " + open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "r").read().strip(),
                    large_image='http://cdn.discordapp.com/attachments/832302343268728903/982699191757312000/rpcicon.png',
-                   start=epoch)
+                   start=epoch, large_text="v0.9.6")
