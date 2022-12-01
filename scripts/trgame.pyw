@@ -20,12 +20,8 @@ if not os.path.exists(os.getenv('APPDATA') + "\\TrannosRun"):
 if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
     open(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass", "x")
 
-if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\volume"):
-    open(os.getenv('APPDATA') + "\\TrannosRun\\volume", "x")
-    showinfo("New game mechanics", "v0.9.3 introduces new controls:\n"
-                                   "C to increase track volume,\n"
-                                   "V to decrease it and\n"
-                                   "G to skip the current track.")
+if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47"):
+    open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "x")
 
 if os.path.isfile("setup.exe"):
     os.remove("setup.exe")
@@ -35,7 +31,7 @@ highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47"
 scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.ak47"
 thepath = os.getcwd() + "\\assets\\"
 
-gscore, curver = 0, "v0.9.3-c"
+gscore, curver = 0, "v0.9.6"
 pgame = Tk()
 
 
@@ -67,7 +63,7 @@ try:
                       '& color 0a '
                       '& echo The installer will start shortly and this window should close itself. '
                       '& start /b ' + os.getcwd() + '\\setup.exe '
-                                                    '& exit')
+                      '& taskkill /f /im SilentCMD.exe & exit')
             stopplayback()
 except requests.exceptions.ConnectionError:
     pass
@@ -391,7 +387,7 @@ def startgame():
         screen.blit(font.render("Volume " + open(os.getenv('APPDATA') + "\\TrannosRun\\volume").read().strip() + "%",
                                 True, '#00ffff'), (screen_width - 190, screen_height - 80))
         pygame.display.flip()
-        clock.tick(72)
+        clock.tick(90)
 
     if not run:
         def center(query):
