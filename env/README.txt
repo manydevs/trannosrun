@@ -9,7 +9,6 @@ Normally, in this directory should be a Python runtime. However, it would make m
 7) Shift-click "pythonw.exe" and select Copy as path.
 8) In a cmd window, type: {what you copied} -m pip install pygame
 			  		       pip install pypresence
-					       pip install pywin32
 					       pip install requests
 					       pip install psutil
 9) Run "trannosrun.py".
