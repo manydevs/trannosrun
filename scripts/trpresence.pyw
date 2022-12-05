@@ -58,4 +58,4 @@ while True:
         RPC.update(state="Score: " + open(scorecoords, 'r').read().strip() + " | Highscore: " + str(getlastscore),
                    details="Listening to: " + open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "r").read().strip(),
                    large_image='http://cdn.discordapp.com/attachments/832302343268728903/982699191757312000/rpcicon.png',
-                   start=epoch, large_text="v0.9.6")
+                   start=epoch, large_text="v0.9.7")
