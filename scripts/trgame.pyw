@@ -7,10 +7,12 @@ from contextlib import redirect_stdout
 from tkinter import *
 from tkinter.messagebox import (askyesno, showinfo)
 import requests
-from win32api import GetSystemMetrics
 
 with redirect_stdout(open(os.devnull, 'w')):
     import pygame
+    getscreenres = Tk()
+    screen_width, screen_height = int(getscreenres.winfo_screenwidth()), int(getscreenres.winfo_screenheight())
+    getscreenres.destroy()
 
 from pygame.locals import K_w, K_s, K_a, K_d, K_c, K_v, K_g, K_ESCAPE, KEYDOWN, QUIT
 
@@ -26,12 +28,11 @@ if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47"):
 if os.path.isfile("setup.exe"):
     os.remove("setup.exe")
 
-screen_width, screen_height = int(GetSystemMetrics(0)), int(GetSystemMetrics(1))
 highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47"
 scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.ak47"
 thepath = os.getcwd() + "\\assets\\"
 
-gscore, curver = 0, "v0.9.6"
+gscore, curver = 0, "v0.9.7"
 pgame = Tk()
 
 
@@ -454,10 +455,16 @@ def startgame():
             if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack"):
                 open(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack", "x")
 
+        def tktooltip(event):
+            if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass"):
+                os.remove(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass")
+                showinfo("Restrictions lifted", "Restart the game for the TrannosRun Launcher to show up.")
+
         pgame.bind("<space>", playonenter)
         pgame.bind("c", tkvolup)
         pgame.bind("v", tkvoldown)
         pgame.bind("g", tkskip)
+        pgame.bind("m", tktooltip)
         pgame.mainloop()
 
 
