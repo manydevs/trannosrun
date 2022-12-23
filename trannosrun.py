@@ -47,6 +47,65 @@ def startgame(hasmusic):
     os.remove(truepath + "\\launcher.bat")
 
 
+def launch():
+    try:
+        response = requests.get("https://api.github.com/repos/manydevs/trannosrun/releases")
+        tagname = ""
+        index = 0
+        while not tagname == "soundoutlet":
+            tagname = response.json()[index]["tag_name"]
+            index += 1
+        index -= 1
+
+        if not os.path.isfile(truepath + "\\soundver"):
+            if not askokcancel("Music player cannot continue", "The sound library was not found.\n"
+                                                               "Click OK to download it or Cancel to play without "
+                                                               "music."):
+                startgame(False)
+            else:
+                showinfo("Connection established", "The requested library was found and will be downloaded after this"
+                                                   "infobox closes.\nNote: The sound library is quite large (~150MB), "
+                                                   "therefore you may have to wait up to 5 minutes for it to download.")
+                getfile(response.json()[index]["assets"][0]["browser_download_url"], "s-assets.zip")
+                if os.path.isdir(truepath + "\\scripts\\s-assets"):
+                    shutil.rmtree(truepath + "\\scripts\\s-assets")
+                shutil.unpack_archive(truepath + "\\s-assets.zip", truepath + "\\scripts")
+                os.remove(truepath + "\\s-assets.zip")
+                with open(truepath + "\\soundver", "x") as wr:
+                    with redirect_stdout(wr):
+                        print(response.json()[index]["name"])
+                showinfo("Library downloaded", "The TrannosRun sound library has downloaded and unpacked "
+                                               "successfully.\n "
+                                               "Click OK to start the game.")
+                gui()
+        elif not response.json()[index]["name"] == open(truepath + "\\soundver", "r").read().strip():
+            if askokcancel("Outdated sound library", "The sound library has updated.\n"
+                                                     "Click OK to download it or Cancel to play with the old one."):
+                showinfo("Connection established", "The requested library was found and will be downloaded after this"
+                                                   "infobox closes.\nNote: The sound library is quite large (~150MB), "
+                                                   "therefore you may have to wait up to 5 minutes for it to download.")
+                getfile(response.json()[index]["assets"][0]["browser_download_url"], "s-assets.zip")
+                if os.path.isdir(truepath + "\\scripts\\s-assets"):
+                    shutil.rmtree(truepath + "\\scripts\\s-assets")
+                shutil.unpack_archive(truepath + "\\s-assets.zip", truepath + "\\scripts")
+                os.remove(truepath + "\\s-assets.zip")
+                with open(truepath + "\\soundver", "w") as wr:
+                    with redirect_stdout(wr):
+                        print(response.json()[index]["name"])
+                showinfo("Library downloaded", "The TrannosRun sound library has downloaded and unpacked "
+                                               "successfully.\nClick OK to start the game.")
+                gui()
+            else:
+                startgame(True)
+        else:
+            startgame(True)
+    except requests.exceptions.ConnectionError:
+        if os.path.isdir(truepath + "\\scripts\\s-assets"):
+            startgame(True)
+        else:
+            startgame(False)
+
+
 def gui():
     def center(query):
         global screen_width, screen_height
@@ -74,7 +133,8 @@ def gui():
     win.title("TrannosRun Launcher")
     soundloc = truepath + "\\scripts\\s-assets"
     playlist = []
-    Label(mainframe, text="TrannosRun Launcher", font="Consolas 21 bold", bg='#87807E').grid(column=0, row=0, columnspan=2)
+    Label(mainframe, text="TrannosRun Launcher",
+          font="Consolas 21 bold", bg='#87807E').grid(column=0, row=0, columnspan=2)
     Label(mainframe, text="Select the songs you would\nlike to hear while in game.\n"
                           "This window will never show again,\nunless you press \"M\" while on the\ndeath screen.",
           font="Consolas 12 bold", bg='#87807E').grid(column=0, row=1, columnspan=2)
@@ -104,6 +164,7 @@ def gui():
                 os.rename(soundloc + "\\" + d + ".mp3", soundloc + "\\" + d.replace("#", "") + ".mp3")
         open(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass", "x")
         win.destroy()
+        launch()
 
     win.protocol("WM_DELETE_WINDOW", yes)
     cnv.create_window((0, 0), window=mainframe, anchor="nw")
@@ -111,67 +172,8 @@ def gui():
     win.mainloop()
 
 
-try:
-    response = requests.get("https://api.github.com/repos/manydevs/trannosrun/releases")
-    tagname = ""
-    index = 0
-    while not tagname == "soundoutlet":
-        tagname = response.json()[index]["tag_name"]
-        index += 1
-    index -= 1
-
-    if not os.path.isfile(truepath + "\\soundver"):
-        if not askokcancel("Music player cannot continue", "The sound library was not found.\n"
-                                                           "Click OK to download it or Cancel to play without music."):
-            startgame(False)
-        else:
-            showinfo("Connection established", "The requested library was found and will be downloaded after this"
-                                               "infobox closes.\nNote: The sound library is quite large (~150MB), "
-                                               "therefore you may have to wait up to 5 minutes for it to download.")
-            getfile(response.json()[index]["assets"][0]["browser_download_url"], "s-assets.zip")
-            if os.path.isdir(truepath + "\\scripts\\s-assets"):
-                shutil.rmtree(truepath + "\\scripts\\s-assets")
-            shutil.unpack_archive(truepath + "\\s-assets.zip", truepath + "\\scripts")
-            os.remove(truepath + "\\s-assets.zip")
-            with open(truepath + "\\soundver", "x") as wr:
-                with redirect_stdout(wr):
-                    print(response.json()[index]["name"])
-            showinfo("Library downloaded", "The TrannosRun sound library has downloaded and unpacked successfully.\n"
-                                           "Click OK to start the game.")
-            if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass"):
-                gui()
-            startgame(True)
-    elif not response.json()[index]["name"] == open(truepath + "\\soundver", "r").read().strip():
-        if askokcancel("Outdated sound library", "The sound library has updated.\n"
-                                                 "Click OK to download it or Cancel to play with the old one."):
-            showinfo("Connection established", "The requested library was found and will be downloaded after this"
-                                               "infobox closes.\nNote: The sound library is quite large (~150MB), "
-                                               "therefore you may have to wait up to 5 minutes for it to download.")
-            getfile(response.json()[index]["assets"][0]["browser_download_url"], "s-assets.zip")
-            if os.path.isdir(truepath + "\\scripts\\s-assets"):
-                shutil.rmtree(truepath + "\\scripts\\s-assets")
-            shutil.unpack_archive(truepath + "\\s-assets.zip", truepath + "\\scripts")
-            os.remove(truepath + "\\s-assets.zip")
-            with open(truepath + "\\soundver", "w") as wr:
-                with redirect_stdout(wr):
-                    print(response.json()[index]["name"])
-            showinfo("Library downloaded", "The TrannosRun sound library has downloaded and unpacked successfully.\n"
-                                           "Click OK to start the game.")
-            if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass"):
-                gui()
-            startgame(True)
-        else:
-            if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass"):
-                gui()
-            startgame(True)
-    else:
-        if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass"):
-            gui()
-        startgame(True)
-except requests.exceptions.ConnectionError:
-    if os.path.isdir(truepath + "\\scripts\\s-assets"):
-        if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass"):
-            gui()
-        startgame(True)
-    else:
-        startgame(False)
+if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass") \
+        and os.path.isdir(truepath + "\\scripts\\s-assets"):
+    gui()
+else:
+    launch()
