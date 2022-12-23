@@ -32,7 +32,7 @@ highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47"
 scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.ak47"
 thepath = os.getcwd() + "\\assets\\"
 
-gscore, curver = 0, "v0.9.7"
+gscore, curver = 0, "v0.9.7-b"
 pgame = Tk()
 
 
