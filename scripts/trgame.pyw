@@ -3,21 +3,18 @@ import random
 import sys
 import urllib.request
 from contextlib import redirect_stdout
-# import cv2
 from tkinter import *
 from tkinter.messagebox import (askyesno, showinfo)
 import requests
 
 with redirect_stdout(open(os.devnull, 'w')):
     import pygame
+
     getscreenres = Tk()
     screen_width, screen_height = int(getscreenres.winfo_screenwidth()), int(getscreenres.winfo_screenheight())
     getscreenres.destroy()
 
 from pygame.locals import K_w, K_s, K_a, K_d, K_c, K_v, K_g, K_ESCAPE, KEYDOWN, QUIT
-
-if not os.path.exists(os.getenv('APPDATA') + "\\TrannosRun"):
-    os.mkdir(os.getenv('APPDATA') + "\\TrannosRun")
 
 if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
     open(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass", "x")
@@ -64,18 +61,19 @@ try:
                       '& color 0a '
                       '& echo The installer will start shortly and this window should close itself. '
                       '& start /b ' + os.getcwd() + '\\setup.exe '
-                      '& taskkill /f /im SilentCMD.exe & exit')
+                                                    '& taskkill /f /im SilentCMD.exe & exit')
             stopplayback()
 except requests.exceptions.ConnectionError:
     pass
 
 
+# noinspection PyTypeChecker
 def startgame():
     global gscore, pgame, highscorecoords, scorecoords, curver, screen_width, screen_height, thepath
     asprspeed = 5
     playerspeed = 7
     pgame.destroy()
-    gscore = 0
+    gscore, intg = 0, 0
 
     clock = pygame.time.Clock()
 
@@ -177,11 +175,15 @@ def startgame():
     pygame.time.set_timer(CLOUDKILL, 40)
     pygame.time.set_timer(UPDATESPEED, 18000)
 
+    try:
+        bg_img = pygame.image.load('assets/bg.jpg')
+        bg_img = pygame.transform.scale(bg_img, (screen_width, screen_height))
+        bgfnd = True
+    except FileNotFoundError:
+        bg_img = ""
+        bgfnd = False
+
     screen = pygame.display.set_mode((screen_width, screen_height))
-    # video = cv2.VideoCapture("bg.mp4")
-    # success, video_image = video.read()
-    # resized = cv2.resize(video_image, (screen_width, screen_height), interpolation=cv2.INTER_AREA)
-    # video_surf = pygame.image.frombuffer(resized.tobytes(), resized.shape[1::-1], "BGR")
 
     pygame.display.set_caption('TrannosRun ' + curver.replace("v", ""))
     pygame.display.set_icon(pygame.image.load(thepath + 'mavro_jet.ico'))
@@ -350,7 +352,14 @@ def startgame():
         clouds11.update()
 
         screen.fill('#87807E')
-        # screen.blit(video_surf, (0, 0))
+
+        if bgfnd:
+            screen.blit(bg_img, (intg, 0))
+            screen.blit(bg_img, (screen_width + intg, 0))
+            if intg < -1920:
+                screen.blit(bg_img, (screen_width + intg, 0))
+                intg = 0
+            intg -= asprspeed
 
         for entity in all_sprites:
             screen.blit(entity.surf, entity.rect)
@@ -413,8 +422,8 @@ def startgame():
         with open(highscorecoords) as f:
             tempscore = int(f.read())
         if 0 == tempscore:
-                Label(pgame, text="(Tip: Press Spacebar to play again)", background='#87807E',
-                      font=('Arial', 14, "bold"), foreground='#ffff00').pack()
+            Label(pgame, text="(Tip: Press Spacebar to play again)", background='#87807E',
+                  font=('Arial', 14, "bold"), foreground='#ffff00').pack()
         if tempscore < gscore:
             endtext = "New high score: " + str(gscore)
             with open(highscorecoords, 'w') as f:
@@ -440,22 +449,32 @@ def startgame():
                     background='#87807E', font=('Arial', 9, "bold"), foreground='#000000')
         lbl.pack()
 
-        def playonenter(event):
+        def playonenter(evnt):
+            with redirect_stdout(open(os.devnull, "r")):
+                print(evnt)
             startgame()
 
-        def tkvolup(event):
+        def tkvolup(evnt):
+            with redirect_stdout(open(os.devnull, "r")):
+                print(evnt)
             if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\volup"):
                 open(os.getenv('APPDATA') + "\\TrannosRun\\volup", "x")
 
-        def tkvoldown(event):
+        def tkvoldown(evnt):
+            with redirect_stdout(open(os.devnull, "r")):
+                print(evnt)
             if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\voldown"):
                 open(os.getenv('APPDATA') + "\\TrannosRun\\voldown", "x")
 
-        def tkskip(event):
+        def tkskip(evnt):
+            with redirect_stdout(open(os.devnull, "r")):
+                print(evnt)
             if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack"):
                 open(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack", "x")
 
-        def tktooltip(event):
+        def tktooltip(evnt):
+            with redirect_stdout(open(os.devnull, "r")):
+                print(evnt)
             if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass"):
                 os.remove(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass")
                 showinfo("Restrictions lifted", "Restart the game for the TrannosRun Launcher to show up.")
