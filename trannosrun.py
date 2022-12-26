@@ -162,7 +162,8 @@ def gui():
                 os.rename(soundloc + "\\" + d + ".mp3", soundloc + "\\#" + d + ".mp3")
             if globals()["int" + str(playlist.index(d) + 2)].get() == 1 and "#" in d:
                 os.rename(soundloc + "\\" + d + ".mp3", soundloc + "\\" + d.replace("#", "") + ".mp3")
-        open(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass", "x")
+        if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass"):
+            open(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass", "x")
         win.destroy()
         launch()
 
