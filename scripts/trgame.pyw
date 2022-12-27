@@ -4,6 +4,7 @@ import sys
 import urllib.request
 from contextlib import redirect_stdout
 from tkinter import *
+from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import (askyesno, showinfo)
 import requests
 
@@ -22,6 +23,12 @@ if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
 if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47"):
     open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "x")
 
+if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path"):
+    bgi = open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'r').read().strip()
+else:
+    open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'x')
+    bgi = ""
+
 if os.path.isfile("setup.exe"):
     os.remove("setup.exe")
 
@@ -29,7 +36,7 @@ highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47"
 scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.ak47"
 thepath = os.getcwd() + "\\assets\\"
 
-gscore, curver = 0, "v0.9.7-b"
+gscore, curver = 0, "v0.9.8"
 pgame = Tk()
 
 
@@ -60,8 +67,7 @@ try:
                       '--- ManyDevs\' TrannosRun Setup Launcher --- '
                       '& color 0a '
                       '& echo The installer will start shortly and this window should close itself. '
-                      '& start /b ' + os.getcwd() + '\\setup.exe '
-                                                    '& taskkill /f /im SilentCMD.exe & exit')
+                      '& start /b ' + os.getcwd() + '\\setup.exe & taskkill /f /im SilentCMD.exe & exit')
             stopplayback()
 except requests.exceptions.ConnectionError:
     pass
@@ -69,7 +75,7 @@ except requests.exceptions.ConnectionError:
 
 # noinspection PyTypeChecker
 def startgame():
-    global gscore, pgame, highscorecoords, scorecoords, curver, screen_width, screen_height, thepath
+    global gscore, pgame, highscorecoords, scorecoords, curver, screen_width, screen_height, thepath, bgi
     asprspeed = 5
     playerspeed = 7
     pgame.destroy()
@@ -176,10 +182,10 @@ def startgame():
     pygame.time.set_timer(UPDATESPEED, 18000)
 
     try:
-        bg_img = pygame.image.load('assets/bg.jpg')
+        bg_img = pygame.image.load(bgi)
         bg_img = pygame.transform.scale(bg_img, (screen_width, screen_height))
         bgfnd = True
-    except FileNotFoundError:
+    except (FileNotFoundError, pygame.error):
         bg_img = ""
         bgfnd = False
 
@@ -450,40 +456,62 @@ def startgame():
         lbl.pack()
 
         def playonenter(evnt):
-            with redirect_stdout(open(os.devnull, "r")):
+            with redirect_stdout(open(os.devnull, "w")):
                 print(evnt)
             startgame()
 
         def tkvolup(evnt):
-            with redirect_stdout(open(os.devnull, "r")):
+            with redirect_stdout(open(os.devnull, "w")):
                 print(evnt)
             if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\volup"):
                 open(os.getenv('APPDATA') + "\\TrannosRun\\volup", "x")
 
         def tkvoldown(evnt):
-            with redirect_stdout(open(os.devnull, "r")):
+            with redirect_stdout(open(os.devnull, "w")):
                 print(evnt)
             if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\voldown"):
                 open(os.getenv('APPDATA') + "\\TrannosRun\\voldown", "x")
 
         def tkskip(evnt):
-            with redirect_stdout(open(os.devnull, "r")):
+            with redirect_stdout(open(os.devnull, "w")):
                 print(evnt)
             if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack"):
                 open(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack", "x")
 
         def tktooltip(evnt):
-            with redirect_stdout(open(os.devnull, "r")):
+            with redirect_stdout(open(os.devnull, "w")):
                 print(evnt)
             if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass"):
                 os.remove(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass")
                 showinfo("Restrictions lifted", "Restart the game for the TrannosRun Launcher to show up.")
+
+        def tkopenbg(evnt):
+            global bgi
+            with redirect_stdout(open(os.devnull, "w")):
+                print(evnt)
+            bgi = askopenfilename(filetypes=[("Images", ".bmp .gif .jpg .jpeg .lbm .pcx .png "
+                                                        ".pnm .svg .tga .tif .tiff .webp .xpm")])
+            if not bgi == "":
+                with redirect_stdout(open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'w')):
+                    print(bgi)
+                startgame()
+            else:
+                if askyesno("No image selected", "No background image was selected.\n"
+                                                 "Do you wish to clear the background image or keep the old one?\n\n"
+                                                 "Yes: Keep\nNo: Clear"):
+                    bgi = open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'r').read().strip()
+                    startgame()
+                else:
+                    with redirect_stdout(open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'w')):
+                        print(bgi)
+                    startgame()
 
         pgame.bind("<space>", playonenter)
         pgame.bind("c", tkvolup)
         pgame.bind("v", tkvoldown)
         pgame.bind("g", tkskip)
         pgame.bind("m", tktooltip)
+        pgame.bind("b", tkopenbg)
         pgame.mainloop()
 
 
