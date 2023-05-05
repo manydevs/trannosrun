@@ -10,6 +10,5 @@ Normally, in this directory should be a Python runtime. However, it would make m
 8) In a cmd window, type: {what you copied} -m pip install pygame
 			  		       pip install pypresence
 					       pip install requests
-					       pip install psutil
 9) Get SilentCMD and place it on the same directory as "env" and "scripts".				       
 10) Place "trannosrun.py" on the same directory as SilentCMD and run it.
