@@ -1,4 +1,4 @@
-Normally, in this directory should be a Python runtime. However, it would make more sense if you were to download and put it in here yourself.
+Normally, in this directory would be a Python runtime. However, it would make more sense if you were to download and put it in here yourself.
 
 1) Check if you have Python installed. If so, skip to step 6.
 2) Download Python from https://www.python.org/downloads/
