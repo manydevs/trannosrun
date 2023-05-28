@@ -5,7 +5,7 @@ from contextlib import redirect_stdout
 from urllib.request import urlretrieve as getfile
 import requests
 import shutil
-from tkinter import (Checkbutton, Label, Tk, IntVar, Frame, Canvas, Scrollbar, BOTH, VERTICAL, Y, LEFT, RIGHT)
+from tkinter import (Checkbutton, Label, Button, Tk, IntVar, Frame, Canvas, Scrollbar, BOTH, VERTICAL, Y, LEFT, RIGHT)
 from tkinter.messagebox import (showinfo, askokcancel)
 from tqdm.auto import tqdm
 
@@ -19,6 +19,10 @@ if os.path.isfile(truepath + "\\s-assets.zip"):
 
 if os.path.isfile(truepath + "\\launcher.bat"):
     os.remove(truepath + "\\launcher.bat")
+
+if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
+    print("Initial check failed: TrannosRun is already running!")
+    sys.exit()
 
 if not os.path.exists(os.getenv('APPDATA') + "\\TrannosRun"):
     os.mkdir(os.getenv('APPDATA') + "\\TrannosRun")
@@ -177,13 +181,15 @@ def gui():
     Label(mainframe, text="Select the songs you would\nlike to hear while in game.\n"
                           "This window will never show again,\nunless you press \"M\" while on the\ndeath screen.",
           font="Consolas 12 bold", bg='#87807E').grid(column=0, row=1, columnspan=2)
+    confb = Button(mainframe, text="Confirm", bg="#87807E", font="Consolas 16 bold")
+    confb.grid(column=0, row=2, columnspan=2)
 
     for path in os.listdir(soundloc):
         if os.path.isfile(os.path.join(soundloc, path)) and ".mp3" in path:
             path2 = path.replace(".mp3", "")
             playlist.append(path2)
 
-    ii = 2
+    ii = 3
 
     for i in playlist:
         Label(mainframe, text=i.replace("#", ""), font="Consolas 11", bg='#87807E')\
@@ -197,9 +203,9 @@ def gui():
 
     def yes():
         for d in playlist:
-            if globals()["int" + str(playlist.index(d) + 2)].get() == 0 and "#" not in d:
+            if globals()["int" + str(playlist.index(d) + 3)].get() == 0 and "#" not in d:
                 os.rename(soundloc + "\\" + d + ".mp3", soundloc + "\\#" + d + ".mp3")
-            if globals()["int" + str(playlist.index(d) + 2)].get() == 1 and "#" in d:
+            if globals()["int" + str(playlist.index(d) + 3)].get() == 1 and "#" in d:
                 os.rename(soundloc + "\\" + d + ".mp3", soundloc + "\\" + d.replace("#", "") + ".mp3")
         if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass"):
             open(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass", "x")
@@ -207,6 +213,7 @@ def gui():
         launch()
 
     win.protocol("WM_DELETE_WINDOW", yes)
+    confb.configure(command=yes)
     cnv.create_window((0, 0), window=mainframe, anchor="nw")
     print("LauncherGUI rendered successfully!")
     win.mainloop()
