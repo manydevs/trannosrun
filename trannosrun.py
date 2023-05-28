@@ -7,6 +7,7 @@ import requests
 import shutil
 from tkinter import (Checkbutton, Label, Tk, IntVar, Frame, Canvas, Scrollbar, BOTH, VERTICAL, Y, LEFT, RIGHT)
 from tkinter.messagebox import (showinfo, askokcancel)
+from tqdm.auto import tqdm
 
 if getattr(sys, 'frozen', False):
     truepath = os.path.dirname(sys.executable)
@@ -16,17 +17,33 @@ else:
 if os.path.isfile(truepath + "\\s-assets.zip"):
     os.remove(truepath + "\\s-assets.zip")
 
+if os.path.isfile(truepath + "\\launcher.bat"):
+    os.remove(truepath + "\\launcher.bat")
+
 if not os.path.exists(os.getenv('APPDATA') + "\\TrannosRun"):
     os.mkdir(os.getenv('APPDATA') + "\\TrannosRun")
 
 with redirect_stdout(open(os.devnull, 'w')):
     getscreenres = Tk()
     screen_width, screen_height = int(getscreenres.winfo_screenwidth()), int(getscreenres.winfo_screenheight())
+    getscreenres.update()
     getscreenres.destroy()
+
+print("CurrentWorkingDirectory: " + truepath)
+print("ScreenResolution: " + str(screen_width) + "x" + str(screen_height))
+print("\n--- TrannosRun Launcher Console Window ---\n")
+
+
+class TqdmUpTo(tqdm):
+    def update_to(self, b=1, bsize=1, tsize=None):
+        if tsize is not None:
+            self.total = tsize
+        self.update(b * bsize - self.n)
 
 
 def startgame(hasmusic):
     if hasmusic:
+        print("INFO: Sound is enabled")
         with redirect_stdout(open(truepath + "\\launcher.bat", "x")):
             print('@echo off\ncd scripts\n'
                   'start /b cmd /c ' + truepath +
@@ -37,6 +54,7 @@ def startgame(hasmusic):
                   '\\env\\pythonw.exe ' + truepath +
                   '\\scripts\\trpresence.pyw')
     else:
+        print("INFO: Sound is disabled")
         with redirect_stdout(open(truepath + "\\launcher.bat", "x")):
             print('@echo off\ncd scripts\n'
                   'start /b cmd /c ' + truepath +
@@ -47,7 +65,6 @@ def startgame(hasmusic):
     si = subprocess.STARTUPINFO()
     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     subprocess.call(truepath + "\\silentcmd.exe " + truepath + "\\launcher.bat", startupinfo=si)
-    os.remove(truepath + "\\launcher.bat")
 
 
 def launch():
@@ -61,46 +78,63 @@ def launch():
         index -= 1
 
         if not os.path.isfile(truepath + "\\soundver"):
+            print("No sound folder has been found. Info box has been shown.")
             if not askokcancel("Music player cannot continue", "The sound library was not found.\n"
                                                                "Click OK to download it or Cancel to play without "
                                                                "music."):
+                print("Download prompt rejected. Launching game...")
                 startgame(False)
             else:
-                showinfo("Connection established", "The requested library was found and will be downloaded after this"
-                                                   "infobox closes.\nNote: The sound library is quite large (~150MB), "
-                                                   "therefore you may have to wait up to 5 minutes for it to download.")
-                getfile(response.json()[index]["assets"][0]["browser_download_url"], "s-assets.zip")
+                eg_link = response.json()[index]["assets"][0]["browser_download_url"]
+                print("Download has started (source: " + eg_link + ")")
+                with TqdmUpTo(unit='B', unit_scale=True, unit_divisor=1024, miniters=1,
+                              desc="s-assets.zip") as t:
+                    getfile(
+                        eg_link, filename="s-assets.zip", reporthook=t.update_to, data=None)
+                    t.total = t.n
+                print("Download has completed, unpacking archive...")
                 if os.path.isdir(truepath + "\\scripts\\s-assets"):
                     shutil.rmtree(truepath + "\\scripts\\s-assets")
                 shutil.unpack_archive(truepath + "\\s-assets.zip", truepath + "\\scripts")
+                print("Archive unpacked successfully, cleaning up...")
                 os.remove(truepath + "\\s-assets.zip")
-                with open(truepath + "\\soundver", "x") as wr:
+                print("Success! Now writing sound version file...")
+                with open(truepath + "\\soundver", "w") as wr:
                     with redirect_stdout(wr):
                         print(response.json()[index]["name"])
+                print("Success! Info box has been shown.")
                 showinfo("Library downloaded", "The TrannosRun sound library has downloaded and unpacked "
-                                               "successfully.\n "
-                                               "Click OK to start the game.")
+                                               "successfully.\nClick OK to start the LauncherGUI.")
                 gui()
         elif not response.json()[index]["name"] == open(truepath + "\\soundver", "r").read().strip():
             if askokcancel("Outdated sound library", "The sound library has updated.\n"
                                                      "Click OK to download it or Cancel to play with the old one."):
-                showinfo("Connection established", "The requested library was found and will be downloaded after this"
-                                                   "infobox closes.\nNote: The sound library is quite large (~150MB), "
-                                                   "therefore you may have to wait up to 5 minutes for it to download.")
-                getfile(response.json()[index]["assets"][0]["browser_download_url"], "s-assets.zip")
+                eg_link = response.json()[index]["assets"][0]["browser_download_url"]
+                print("Download has started (source: " + eg_link + ")")
+                with TqdmUpTo(unit='B', unit_scale=True, unit_divisor=1024, miniters=1,
+                              desc="s-assets.zip") as t:
+                    getfile(
+                        eg_link, filename="s-assets.zip", reporthook=t.update_to, data=None)
+                    t.total = t.n
+                print("Download has completed, unpacking archive...")
                 if os.path.isdir(truepath + "\\scripts\\s-assets"):
                     shutil.rmtree(truepath + "\\scripts\\s-assets")
                 shutil.unpack_archive(truepath + "\\s-assets.zip", truepath + "\\scripts")
+                print("Archive unpacked successfully, cleaning up...")
                 os.remove(truepath + "\\s-assets.zip")
+                print("Success! Now writing sound version file...")
                 with open(truepath + "\\soundver", "w") as wr:
                     with redirect_stdout(wr):
                         print(response.json()[index]["name"])
+                print("Success! Info box has been shown.")
                 showinfo("Library downloaded", "The TrannosRun sound library has downloaded and unpacked "
-                                               "successfully.\nClick OK to start the game.")
+                                               "successfully.\nClick OK to start the LauncherGUI.")
                 gui()
             else:
+                print("Update prompt rejected. Launching game...")
                 startgame(True)
         else:
+            print("No updates found. Launching game...")
             startgame(True)
     except requests.exceptions.ConnectionError:
         if os.path.isdir(truepath + "\\scripts\\s-assets"):
@@ -110,6 +144,8 @@ def launch():
 
 
 def gui():
+    print("Now loading LauncherGUI...")
+
     def center(query):
         global screen_width, screen_height
         query.update_idletasks()
@@ -172,12 +208,14 @@ def gui():
 
     win.protocol("WM_DELETE_WINDOW", yes)
     cnv.create_window((0, 0), window=mainframe, anchor="nw")
-
+    print("LauncherGUI rendered successfully!")
     win.mainloop()
 
 
 if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\showplaylist.pass") \
         and os.path.isdir(truepath + "\\scripts\\s-assets"):
+    print("No PASS file found, starting LauncherGUI...")
     gui()
 else:
+    print("All checks succeeded, launching playlist auto-updater...")
     launch()
