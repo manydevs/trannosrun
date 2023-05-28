@@ -44,7 +44,7 @@ while True:
     if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
         sys.exit()
     if len(playlist) == 0:
-        playlist = pback
+        playlist = pback.copy()
         random.shuffle(playlist)
 
     if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\voldown"):
