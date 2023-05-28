@@ -5,7 +5,7 @@ import urllib.request
 from contextlib import redirect_stdout
 from tkinter import *
 from tkinter.filedialog import askopenfilename
-from tkinter.messagebox import (askyesno, showinfo)
+from tkinter.messagebox import (askyesno, showinfo, askyesnocancel)
 import requests
 
 with redirect_stdout(open(os.devnull, 'w')):
@@ -26,8 +26,11 @@ if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47"):
 if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path"):
     bgi = open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'r').read().strip()
 else:
-    open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'x')
-    bgi = ""
+    bgi = "assets/bg.jpg"
+    with redirect_stdout(open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'x')):
+        print(bgi)
+        
+os.system("taskkill /f /im trannosrun.exe")
 
 if os.path.isfile("setup.exe"):
     os.remove("setup.exe")
@@ -36,7 +39,7 @@ highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47"
 scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.ak47"
 thepath = os.getcwd() + "\\assets\\"
 
-gscore, curver = 0, "v0.9.8"
+gscore, curver = 0, "v0.9.9"
 pgame = Tk()
 
 
@@ -496,12 +499,19 @@ def startgame():
                     print(bgi)
                 startgame()
             else:
-                if askyesno("No image selected", "No background image was selected.\n"
-                                                 "Do you wish to clear the background image or keep the old one?\n\n"
-                                                 "Yes: Keep\nNo: Clear"):
+                qi = askyesnocancel("No image selected", "No background image was selected.\n"
+                                                         "Do you wish to clear the background image, "
+                                                         "keep the old one or reset?\n\n"
+                                                         "Yes: Keep\nNo: Reset\nCacnel: Clear")
+                if qi is True:
                     bgi = open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'r').read().strip()
                     startgame()
-                else:
+                elif qi is False:
+                    bgi = "assets/bg.jpg"
+                    with redirect_stdout(open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'w')):
+                        print(bgi)
+                    startgame()
+                elif qi is None:
                     with redirect_stdout(open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'w')):
                         print(bgi)
                     startgame()
