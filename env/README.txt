@@ -11,6 +11,5 @@ Normally, in this directory would be a Python runtime. However, it would make mo
 			  		       pip install pypresence
 					       pip install requests
 					       pip install psutil
-					       pip install tqdm
 9) Get SilentCMD and place it on the same directory as "env" and "scripts".				       
 10) Place "trannosrun.py" on the same directory as SilentCMD and run it.
