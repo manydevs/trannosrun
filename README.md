@@ -8,6 +8,9 @@ Get the game by visiting [LabeledZed's itch.io page](https://labeledzed.itch.io/
 
 or from [here](https://github.com/manydevs/trannosrun/releases/latest) (by downloading the setup)
 
+## Track list
+View the full track list [here](https://github.com/manydevs/trannosrun/releases/tag/soundoutlet)
+
 ## Source code downloading instructions
 Clone the repo with Git by executing:
 ```git
