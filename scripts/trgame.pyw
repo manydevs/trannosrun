@@ -1,27 +1,25 @@
 import os
 import random
-import sys
+from sys import exit
 import urllib.request
 from contextlib import redirect_stdout
 from tkinter import *
 from tkinter.filedialog import askopenfilename
-from tkinter.messagebox import (askyesno, showinfo, askyesnocancel)
+from tkinter.messagebox import (askyesno, showinfo, askyesnocancel, showerror)
 import requests
-
-with redirect_stdout(open(os.devnull, 'w')):
-    import pygame
-
-    getscreenres = Tk()
-    screen_width, screen_height = int(getscreenres.winfo_screenwidth()), int(getscreenres.winfo_screenheight())
-    getscreenres.destroy()
-
-from pygame.locals import K_w, K_s, K_a, K_d, K_c, K_v, K_g, K_ESCAPE, KEYDOWN, QUIT
+import pygame
+import subprocess
+from pygame.locals import K_w, K_s, K_a, K_d, K_c, K_v, K_g, K_UP, K_DOWN, K_LEFT, K_RIGHT, K_ESCAPE, KEYDOWN, QUIT
+import redis
+import base64
+from time import sleep
+from threading import Thread
 
 if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
     open(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass", "x")
 
-if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47"):
-    open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "x")
+if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info"):
+    open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info", "x")
 
 if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path"):
     bgi = open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'r').read().strip()
@@ -29,24 +27,32 @@ else:
     bgi = "assets/bg.jpg"
     with redirect_stdout(open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'x')):
         print(bgi)
-        
-os.system("taskkill /f /im trannosrun.exe")
 
 if os.path.isfile("setup.exe"):
     os.remove("setup.exe")
+if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\score.ak47"):
+    os.remove(os.getenv('APPDATA') + "\\TrannosRun\\score.ak47")
+if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\volume"):
+    os.remove(os.getenv('APPDATA') + "\\TrannosRun\\volume")
+if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47"):
+    os.remove(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47")
+if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47"):
+    print(open(os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47", "r").read().strip())
+    os.remove(os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47")
 
-highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47"
-scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.ak47"
+highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.info"
+scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.info"
 thepath = os.getcwd() + "\\assets\\"
 
-gscore, curver = 0, "v0.9.9"
+gscore, connfail, curver = 0, False, "v1.0.0"
 pgame = Tk()
+screen_width, screen_height = int(pgame.winfo_screenwidth()), int(pgame.winfo_screenheight())
 
 
 def stopplayback():
     if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
         os.remove(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass")
-    sys.exit()
+    exit()
 
 
 try:
@@ -79,11 +85,11 @@ except requests.exceptions.ConnectionError:
 # noinspection PyTypeChecker
 def startgame():
     global gscore, pgame, highscorecoords, scorecoords, curver, screen_width, screen_height, thepath, bgi
+    global curver, trver, connfail
     asprspeed = 5
     playerspeed = 7
     pgame.destroy()
     gscore, intg = 0, 0
-
     clock = pygame.time.Clock()
 
     if not os.path.isfile(highscorecoords):
@@ -94,9 +100,9 @@ def startgame():
 
     if not os.path.isfile(scorecoords):
         open(scorecoords, "x")
-        with open(scorecoords, 'w') as f:
-            with redirect_stdout(f):
-                print(0)
+    with open(scorecoords, 'w') as f:
+        with redirect_stdout(f):
+            print(0)
 
     class Player(pygame.sprite.Sprite):
         def __init__(self):
@@ -106,13 +112,13 @@ def startgame():
             self.rect = self.surf.get_rect()
 
         def update(self, prssdkeys):
-            if prssdkeys[K_w]:
+            if prssdkeys[K_w] or prssdkeys[K_UP]:
                 self.rect.move_ip(0, int("-" + str(playerspeed)))
-            if prssdkeys[K_s]:
+            if prssdkeys[K_s] or prssdkeys[K_DOWN]:
                 self.rect.move_ip(0, playerspeed)
-            if prssdkeys[K_d]:
+            if prssdkeys[K_d] or prssdkeys[K_RIGHT]:
                 self.rect.move_ip(playerspeed, 0)
-            if prssdkeys[K_a]:
+            if prssdkeys[K_a] or prssdkeys[K_LEFT]:
                 self.rect.move_ip(int("-" + str(playerspeed)), 0)
 
             if self.rect.left <= 0:
@@ -233,8 +239,8 @@ def startgame():
         global gscore
         pygame.mixer.Sound("collect.wav").play()
         gscore += 1
-        with open(scorecoords, 'w') as f2:
-            with redirect_stdout(f2):
+        with open(scorecoords, 'w') as scrrd:
+            with redirect_stdout(scrrd):
                 print(gscore)
 
     while run:
@@ -243,14 +249,14 @@ def startgame():
                 if event.key == K_ESCAPE:
                     run = False
                 if event.key == K_c:
-                    if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\volup"):
-                        open(os.getenv('APPDATA') + "\\TrannosRun\\volup", "x")
+                    if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\volup.pass"):
+                        open(os.getenv('APPDATA') + "\\TrannosRun\\volup.pass", "x")
                 if event.key == K_v:
-                    if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\voldown"):
-                        open(os.getenv('APPDATA') + "\\TrannosRun\\voldown", "x")
+                    if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\voldown.pass"):
+                        open(os.getenv('APPDATA') + "\\TrannosRun\\voldown.pass", "x")
                 if event.key == K_g:
-                    if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack"):
-                        open(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack", "x")
+                    if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack.pass"):
+                        open(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack.pass", "x")
             elif event.type == QUIT:
                 stopplayback()
                 run = False
@@ -403,12 +409,16 @@ def startgame():
 
         screen.blit(font.render(score, True, 'white'), (screen_width - 132, 48))
         screen.blit(font.render(curver, True, '#00ff00'), (screen_width - 150, screen_height - 50))
-        screen.blit(font.render("Volume " + open(os.getenv('APPDATA') + "\\TrannosRun\\volume").read().strip() + "%",
-                                True, '#00ffff'), (screen_width - 190, screen_height - 80))
+        screen.blit(font.render("Volume " + open(os.getenv('APPDATA') + "\\TrannosRun\\volume.info").read().strip()
+                                + "%", True, '#00ffff'), (screen_width - 190, screen_height - 80))
         pygame.display.flip()
         clock.tick(90)
 
     if not run:
+        with open(scorecoords, 'w') as f2:
+            with redirect_stdout(f2):
+                print('-' + str(gscore) + '-')
+
         def center(query):
             global screen_width, screen_height
             query.update_idletasks()
@@ -425,38 +435,92 @@ def startgame():
         pgame.title('TrannosRun ' + curver.replace("v", ""))
         pgame.configure(bg='#87807E')
         pgame.iconbitmap(thepath + 'mavro_jet.ico')
-
         pgame.protocol("WM_DELETE_WINDOW", stopplayback)
+
+        hwid = "trlb:" + subprocess.check_output('wmic csproduct get uuid').split(b'\n')[1].strip().decode()
+        # This needs a Redis database to work
+        r = redis.Redis(host='',
+                        port=,
+                        decode_responses=True,
+                        password='')
+
+        try:
+            ovindex = (gscore / counter) + gscore
+        except ZeroDivisionError:
+            ovindex = 0
 
         with open(highscorecoords) as f:
             tempscore = int(f.read())
         if 0 == tempscore:
             Label(pgame, text="(Tip: Press Spacebar to play again)", background='#87807E',
-                  font=('Arial', 14, "bold"), foreground='#ffff00').pack()
+                  font=('Consolas', 14, "bold"), foreground='#ffff00').pack()
         if tempscore < gscore:
             endtext = "New high score: " + str(gscore)
             with open(highscorecoords, 'w') as f:
                 with redirect_stdout(f):
                     print(gscore)
         else:
-            endtext = "Score: " + str(gscore) + " | Highscore: " + str(tempscore)
+            endtext = "Score: " + str(gscore) + " in " + str(counter) + "sec | Highscore: " + str(tempscore)
 
-        wp = Label(pgame, text="Well played!", background='#87807E', font='Arial 25 bold', foreground='#000000')
+        def checklb():
+            global connfail, curver, trver
+            if curver == trver:
+                try:
+                    if r.get(hwid) is not None:
+                        if float(r.get(hwid).split("¶")[3]) < ovindex:
+                            r.set(hwid, r.get(hwid).split("¶")[0] + "¶" +
+                                  str(gscore) + "¶" + str(counter) + "¶" + str(ovindex))
+                except redis.exceptions.ConnectionError:
+                    if not connfail:
+                        showerror("Timed out", "The Leaderboards service has failed to process your request.\n"
+                                               "All future requests within this session will be halted "
+                                               "unless you restart the game.")
+                        connfail = True
+            else:
+                if not connfail:
+                    showerror("Connection rejected", "This version of TrannosRun is older than the current one.\n"
+                                                     "Your Leaderboards score will not be updated!")
+                    connfail = True
+
+        Thread(target=checklb).start()
+
+        wp = Label(pgame, text="Well played!", background='#87807E', font='Consolas 25 bold', foreground='#000000')
         wp.pack()
 
-        wp2 = Label(pgame, text=endtext, background='#87807E', font=('Arial', 12, "bold"), foreground='#000000')
+        wp2 = Label(pgame, text=endtext, background='#87807E', font=('Consolas', 12, "bold"), foreground='#000000')
         wp2.pack()
 
         xamenosprep = PhotoImage(file=thepath + 'xamene.png')
         xamenos = Label(pgame, image=xamenosprep, background='#87807E')
         xamenos.pack()
 
-        lbl = Label(pgame, text="Was playing: " +
-                                open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47").read().strip() +
-                                " | Volume " + open(os.getenv('APPDATA') + "\\TrannosRun\\volume").read().strip() +
-                                "% (Not updating)",
-                    background='#87807E', font=('Arial', 9, "bold"), foreground='#000000')
+        lbl = Label(pgame, text="Now playing: " +
+                                open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info").read().strip() +
+                                " | Volume " + open(os.getenv('APPDATA') + "\\TrannosRun\\volume.info").read().strip() +
+                                "%",
+                    background='#87807E', font=('Consolas', 9, "bold"), foreground='#000000')
         lbl.pack()
+
+        def updatetracks():
+            while os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
+                try:
+                    pgame.state()
+                    trackhandler = open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info").read().strip()
+                    volhandler = open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info").read().strip()
+                    sleep(0.2)
+                    if not trackhandler == open(os.getenv('APPDATA') +
+                                                "\\TrannosRun\\currentmusic.info").read().strip() or \
+                            volhandler == open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info").read().strip():
+                        lbl.configure(text="Now playing: " + open(os.getenv('APPDATA') +
+                                                                  "\\TrannosRun\\currentmusic.info").read().strip() +
+                                           " | Volume " + open(os.getenv('APPDATA') +
+                                                               "\\TrannosRun\\volume.info").read().strip() + "%")
+                        lbl.update()
+                except TclError:
+                    pass
+            return
+
+        Thread(target=updatetracks).start()
 
         def playonenter(evnt):
             with redirect_stdout(open(os.devnull, "w")):
@@ -466,20 +530,20 @@ def startgame():
         def tkvolup(evnt):
             with redirect_stdout(open(os.devnull, "w")):
                 print(evnt)
-            if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\volup"):
-                open(os.getenv('APPDATA') + "\\TrannosRun\\volup", "x")
+            if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\volup.pass"):
+                open(os.getenv('APPDATA') + "\\TrannosRun\\volup.pass", "x")
 
         def tkvoldown(evnt):
             with redirect_stdout(open(os.devnull, "w")):
                 print(evnt)
-            if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\voldown"):
-                open(os.getenv('APPDATA') + "\\TrannosRun\\voldown", "x")
+            if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\voldown.pass"):
+                open(os.getenv('APPDATA') + "\\TrannosRun\\voldown.pass", "x")
 
         def tkskip(evnt):
             with redirect_stdout(open(os.devnull, "w")):
                 print(evnt)
-            if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack"):
-                open(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack", "x")
+            if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack.pass"):
+                open(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack.pass", "x")
 
         def tktooltip(evnt):
             with redirect_stdout(open(os.devnull, "w")):
@@ -516,12 +580,121 @@ def startgame():
                         print(bgi)
                     startgame()
 
+        def tkopenlb(evnt):
+            with redirect_stdout(open(os.devnull, "w")):
+                print(evnt)
+            trlb = Toplevel(pgame)
+            trlb.focus_force()
+            trlb.resizable(False, False)
+            trlb.configure(bg='#87807E')
+            trlb.iconbitmap(thepath + 'mavro_jet.ico')
+            trlb.title("TrannosRun Leaderboards")
+
+            def hasname(nest):
+                canuse = False
+                with redirect_stdout(open(os.devnull, "w")):
+                    print(nest)
+                try:
+                    with redirect_stdout(open(os.devnull, "w")):
+                        print(etr.get()[20])
+                    showerror("Try again.", "You have exceeded the 20 character limit!")
+                except IndexError:
+                    for item in r.keys():
+                        if etr.get().strip() == item.split("¶")[0]:
+                            showerror("Try again.", "This user already exists.")
+                            break
+                        elif "¶" in etr.get().strip() or " " in etr.get().strip():
+                            showerror("Try again.", "You have used a banned character.")
+                            break
+                        canuse = True
+                    if canuse:
+                        r.set(hwid, etr.get().strip() + "¶" + str(gscore) + "¶" + str(counter) + "¶" + str(ovindex))
+                        etr.delete(0, END)
+                        req.destroy()
+                        showinfo("Success!", "Username saved!\nPress Tab to open the Leaderboards.")
+                        trlb.destroy()
+
+            def isindb():
+                try:
+                    for cloudid in r.keys():
+                        if cloudid == hwid:
+                            return False
+                        else:
+                            pass
+                    return True
+                except redis.exceptions.ConnectionError:
+                    showerror("No internet connection",
+                              "TrannosRun was unable to connect to the Leaderboards service.\n"
+                              "Perhaps the internet connection is unstable or dysfunctional.")
+
+            def ability():
+                (Label(trlb, text="TrannosRun Leaderboards", bg="#87807E", font="Consolas 18 bold")
+                 .grid(column=0, row=0, columnspan=3))
+                Label(trlb, text="Username", bg="#87807E", font="Consolas 14 bold").grid(column=0, row=1)
+                Label(trlb, text="Score", bg="#87807E", font="Consolas 14 bold").grid(column=1, row=1)
+                Label(trlb, text="Time", bg="#87807E", font="Consolas 14 bold").grid(column=2, row=1)
+                srtdict = {}
+                try:
+                    for entr in r.keys():
+                        actetr = r.get(entr)
+                        srtdict[float(actetr.split("¶")[3])] = (actetr.split("¶")[0] + "¶" +
+                                                                actetr.split("¶")[1] + "¶" +
+                                                                actetr.split("¶")[2])
+                    for ind in range(20):
+                        try:
+                            Label(trlb, text=srtdict.get(sorted(srtdict, reverse=True)[ind]).split("¶")[0],
+                                  bg="#87807E", font="Consolas 12").grid(column=0, row=ind + 2)
+                            Label(trlb, text=srtdict.get(sorted(srtdict, reverse=True)[ind]).split("¶")[1],
+                                  bg="#87807E", font="Consolas 12").grid(column=1, row=ind + 2)
+                            Label(trlb, text=srtdict.get(sorted(srtdict, reverse=True)[ind]).split("¶")[2],
+                                  bg="#87807E", font="Consolas 12").grid(column=2, row=ind + 2)
+                        except IndexError:
+                            break
+                    waitwin.destroy()
+                except redis.exceptions.ConnectionError:
+                    showerror("No internet connection",
+                              "TrannosRun was unable to connect to the Leaderboards service.\n"
+                              "Perhaps the internet connection is unstable or dysfunctional.")
+                    waitwin.destroy()
+                    trlb.destroy()
+
+            if curver == trver:
+                dbprs = isindb()
+                if dbprs:
+                    req = Toplevel(trlb)
+                    req.focus_force()
+                    req.resizable(False, False)
+                    req.title("TRLB Dialog")
+                    req.configure(bg='#87807E')
+                    req.iconbitmap(thepath + 'mavro_jet.ico')
+                    Label(req, text="Input your name:", bg="#87807E", font="Consolas 16").pack()
+                    etr = Entry(req, bg="#756f6d", font="Consolas 13")
+                    etr.pack()
+                    req.bind("<Return>", hasname)
+                    req.mainloop()
+                elif dbprs is None:
+                    trlb.destroy()
+                else:
+                    waitwin = Toplevel(trlb)
+                    waitwin.focus_force()
+                    waitwin.resizable(False, False)
+                    waitwin.title("TRLB Dialog")
+                    waitwin.configure(bg='#87807E')
+                    waitwin.iconbitmap(thepath + 'mavro_jet.ico')
+                    Label(waitwin, text="Please wait...", bg="#87807E", font="Consolas 14").pack()
+                    Thread(target=ability).start()
+            else:
+                showerror("Connection rejected", "This version of TrannosRun is older than the current one.\n"
+                                                 "The Leaderboards window will now close.")
+                trlb.destroy()
+
         pgame.bind("<space>", playonenter)
         pgame.bind("c", tkvolup)
         pgame.bind("v", tkvoldown)
         pgame.bind("g", tkskip)
         pgame.bind("m", tktooltip)
         pgame.bind("b", tkopenbg)
+        pgame.bind("<Tab>", tkopenlb)
         pgame.mainloop()
 
 
