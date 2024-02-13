@@ -1,7 +1,5 @@
 # TrannosRun
 Dodge the police cars and try to collect as many guns as possible or you'll get caught, just like Trannos did. 
-### Simple as that.
-Seems like someone was unable to do so.
 
 ## Download the game:
 Get the game by visiting [LabeledZed's itch.io page](https://labeledzed.itch.io/trannosrun)
