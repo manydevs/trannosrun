@@ -8,7 +8,7 @@ with redirect_stdout(open(os.devnull, 'w')):
 
 soundloc = os.getcwd() + "\\s-assets"
 globalvolume, fakevolume = 0.20, 20
-with open(os.getenv('APPDATA') + "\\TrannosRun\\volume", "w") as vol:
+with open(os.getenv('APPDATA') + "\\TrannosRun\\volume.info", "w") as vol:
     with redirect_stdout(vol):
         print(fakevolume)
 
@@ -33,7 +33,7 @@ soundmixdelay = int(mixer.get_length()) * 1000
 
 mixer.set_volume(globalvolume)
 mixer.play()
-with open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "w") as currm:
+with open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info", "w") as currm:
     with redirect_stdout(currm):
         print(ssel)
 pygame.init()
@@ -47,33 +47,33 @@ while True:
         playlist = pback.copy()
         random.shuffle(playlist)
 
-    if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\voldown"):
+    if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\voldown.pass"):
         if not fakevolume <= 0:
             fakevolume -= 10
             globalvolume -= 0.10
             mixer.set_volume(globalvolume)
-            with open(os.getenv('APPDATA') + "\\TrannosRun\\volume", "w") as vol:
+            with open(os.getenv('APPDATA') + "\\TrannosRun\\volume.info", "w") as vol:
                 with redirect_stdout(vol):
                     print(fakevolume)
         try:
-            os.remove(os.getenv('APPDATA') + "\\TrannosRun\\voldown")
+            os.remove(os.getenv('APPDATA') + "\\TrannosRun\\voldown.pass")
         except PermissionError:
             pass
 
-    if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\volup"):
+    if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\volup.pass"):
         if not fakevolume >= 100:
             fakevolume += 10
             globalvolume += 0.10
             mixer.set_volume(globalvolume)
-            with open(os.getenv('APPDATA') + "\\TrannosRun\\volume", "w") as vol:
+            with open(os.getenv('APPDATA') + "\\TrannosRun\\volume.info", "w") as vol:
                 with redirect_stdout(vol):
                     print(fakevolume)
         try:
-            os.remove(os.getenv('APPDATA') + "\\TrannosRun\\volup")
+            os.remove(os.getenv('APPDATA') + "\\TrannosRun\\volup.pass")
         except PermissionError:
             pass
 
-    if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack"):
+    if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack.pass"):
         ssel = playlist[0]
         playlist.pop(0)
         mixer.stop()
@@ -82,10 +82,10 @@ while True:
         soundmixdelay = int(mixer.get_length()) * 1000
         pygame.time.set_timer(SOUNDMIX, soundmixdelay)
         mixer.play()
-        with open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "w") as currm:
+        with open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info", "w") as currm:
             with redirect_stdout(currm):
                 print(ssel)
-        os.remove(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack")
+        os.remove(os.getenv('APPDATA') + "\\TrannosRun\\skiptrack.pass")
 
     for event in pygame.event.get():
         if event.type == SOUNDMIX:
@@ -97,6 +97,6 @@ while True:
             soundmixdelay = int(mixer.get_length()) * 1000
             pygame.time.set_timer(SOUNDMIX, soundmixdelay)
             mixer.play()
-            with open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "w") as currm:
+            with open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info", "w") as currm:
                 with redirect_stdout(currm):
                     print(ssel)

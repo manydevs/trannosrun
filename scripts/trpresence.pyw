@@ -37,9 +37,10 @@ else:
         def update(state, details, large_image, start):
             pass
 
-highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.ak47"
-scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.ak47"
+highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.info"
+scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.info"
 epoch = int(time.time())
+os.system("taskkill /f /im trannosrun.exe")
 while True:
     if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
         exit()
@@ -55,6 +56,7 @@ while True:
             getlastscore = int(f.read())
     if cpr('discord.exe') or cpr('discordptb.exe') or cpr('discordcanary.exe'):
         RPC.update(state="Score: " + open(scorecoords, 'r').read().strip() + " | Highscore: " + str(getlastscore),
-                   details="Listening to: " + open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.ak47", "r").read().strip(),
-                   large_image='http://cdn.discordapp.com/attachments/832302343268728903/982699191757312000/rpcicon.png',
-                   start=epoch, large_text="v0.9.9")
+                   details="Listening to: " + open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info", "r").read().strip(),
+                   large_image='rpcicon',
+                   start=epoch, large_text="v1.0.0")
+                   
