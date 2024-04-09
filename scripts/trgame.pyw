@@ -438,11 +438,10 @@ def startgame():
         pgame.protocol("WM_DELETE_WINDOW", stopplayback)
 
         hwid = "trlb:" + subprocess.check_output('wmic csproduct get uuid').split(b'\n')[1].strip().decode()
-        # This needs a Redis database to work
-        r = redis.Redis(host='',
+        r = redis.Redis(host=,
                         port=,
                         decode_responses=True,
-                        password='')
+                        password=)
 
         try:
             ovindex = (gscore / counter) + gscore
