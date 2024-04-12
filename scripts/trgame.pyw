@@ -601,9 +601,11 @@ def startgame():
                     for item in r.keys():
                         if etr.get().strip() == item.split("¶")[0]:
                             showerror("Try again.", "This user already exists.")
+                            canuse = False
                             break
                         elif "¶" in etr.get().strip() or " " in etr.get().strip():
                             showerror("Try again.", "You have used a banned character.")
+                            canuse = False
                             break
                         canuse = True
                     if canuse:
