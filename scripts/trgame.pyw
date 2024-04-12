@@ -15,11 +15,11 @@ import base64
 from time import sleep
 from threading import Thread
 
-if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
-    open(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass", "x")
-
 if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info"):
     open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info", "x")
+
+if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
+    open(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass", "x")
 
 if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path"):
     bgi = open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'r').read().strip()
