@@ -15,11 +15,11 @@ import base64
 from time import sleep
 from threading import Thread
 
-if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info"):
-    open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info", "x")
-
 if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
     open(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass", "x")
+
+if not os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info"):
+    open(os.getenv('APPDATA') + "\\TrannosRun\\currentmusic.info", "x")
 
 if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path"):
     bgi = open(os.getenv('APPDATA') + "\\TrannosRun\\bgimg.path", 'r').read().strip()
@@ -44,7 +44,7 @@ highscorecoords = os.getenv('APPDATA') + "\\TrannosRun\\highscore.info"
 scorecoords = os.getenv('APPDATA') + "\\TrannosRun\\score.info"
 thepath = os.getcwd() + "\\assets\\"
 
-gscore, connfail, curver = 0, False, "v1.0.0"
+gscore, connfail, curver = 0, False, "v1.0.1"
 pgame = Tk()
 screen_width, screen_height = int(pgame.winfo_screenwidth()), int(pgame.winfo_screenheight())
 
@@ -52,6 +52,7 @@ screen_width, screen_height = int(pgame.winfo_screenwidth()), int(pgame.winfo_sc
 def stopplayback():
     if os.path.isfile(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass"):
         os.remove(os.getenv('APPDATA') + "\\TrannosRun\\playback.pass")
+    pgame.destroy()
     exit()
 
 
@@ -86,11 +87,11 @@ except requests.exceptions.ConnectionError:
 def startgame():
     global gscore, pgame, highscorecoords, scorecoords, curver, screen_width, screen_height, thepath, bgi
     global curver, trver, connfail
-    asprspeed = 5
-    playerspeed = 7
+    clock = pygame.time.Clock()
+    asprspeed = 7
+    playerspeed = 9
     pgame.destroy()
     gscore, intg = 0, 0
-    clock = pygame.time.Clock()
 
     if not os.path.isfile(highscorecoords):
         open(highscorecoords, "x")
@@ -113,13 +114,13 @@ def startgame():
 
         def update(self, prssdkeys):
             if prssdkeys[K_w] or prssdkeys[K_UP]:
-                self.rect.move_ip(0, int("-" + str(playerspeed)))
+                self.rect.move_ip(0, playerspeed * -1)
             if prssdkeys[K_s] or prssdkeys[K_DOWN]:
                 self.rect.move_ip(0, playerspeed)
             if prssdkeys[K_d] or prssdkeys[K_RIGHT]:
                 self.rect.move_ip(playerspeed, 0)
             if prssdkeys[K_a] or prssdkeys[K_LEFT]:
-                self.rect.move_ip(int("-" + str(playerspeed)), 0)
+                self.rect.move_ip(playerspeed * -1, 0)
 
             if self.rect.left <= 0:
                 self.rect.left = 0
@@ -138,7 +139,7 @@ def startgame():
             self.rect = self.surf.get_rect(center=(screen_width - 20, random.randint(1, screen_height)))
 
         def update(self):
-            self.rect.move_ip(int("-" + str(asprspeed)), 0)
+            self.rect.move_ip(asprspeed * -1, 0)
             if self.rect.left < 65:
                 self.kill()
 
@@ -150,7 +151,7 @@ def startgame():
             self.rect = self.surf.get_rect(center=(screen_width - 20, random.randint(1, screen_height)))
 
         def update(self):
-            self.rect.move_ip(int("-" + str(asprspeed)), 0)
+            self.rect.move_ip(asprspeed * -1, 0)
             if self.rect.left < 80:
                 self.kill()
 
@@ -159,34 +160,38 @@ def startgame():
     counter, timer, score = 0, '0'.rjust(3), '0'.rjust(3)
     pygame.time.set_timer(pygame.USEREVENT, 1000)
     font = pygame.font.SysFont('Consolas', 30)
+    guncount = int(round((screen_width * screen_height) / 148114))
+    if guncount == 0:
+        showerror("Low screen resolution", "The screen resolution is too low.\nTrannosRun will now exit.")
+        stopplayback()
 
     ADDENEMY = pygame.USEREVENT + 1
     CLOUDKILL = pygame.USEREVENT + 2
-    ADDCLOUD = pygame.USEREVENT + 3
-    ADDCLOUD2 = pygame.USEREVENT + 4
-    ADDCLOUD3 = pygame.USEREVENT + 5
-    ADDCLOUD4 = pygame.USEREVENT + 6
-    ADDCLOUD5 = pygame.USEREVENT + 7
-    ADDCLOUD6 = pygame.USEREVENT + 8
-    ADDCLOUD7 = pygame.USEREVENT + 9
-    ADDCLOUD8 = pygame.USEREVENT + 10
-    UPDATESPEED = pygame.USEREVENT + 11
-    ADDCLOUD9 = pygame.USEREVENT + 12
-    ADDCLOUD10 = pygame.USEREVENT + 13
-    ADDCLOUD11 = pygame.USEREVENT + 14
+    UPDATESPEED = pygame.USEREVENT + 3
+    interval = 0
+    infloop = ""
+    cloudkillloop = ""
+    cloudupdate = ""
+    enemycollide = ""
+
+    for cl in range(guncount):
+        globals()["ADDCLOUD" + str(cl)] = pygame.USEREVENT + (4 + cl)
+        pygame.time.set_timer(globals()["ADDCLOUD" + str(cl)], 5000 + interval)
+        interval += 200
+        globals()["cloud" + str(cl)] = Cloud()
+        globals()["clouds" + str(cl)] = pygame.sprite.Group()
+        infloop += "if event.type == ADDCLOUD" + str(cl) + ":\n\t" \
+                   "cloud" + str(cl) + " = Cloud()\n\t" \
+                   "clouds" + str(cl) + ".add(cloud" + str(cl) + ")\n\t" \
+                   "all_sprites.add(cloud" + str(cl) + ")\n"
+        cloudkillloop += "if pygame.sprite.spritecollideany(player, clouds" + str(cl) + "):\n\t" \
+                         "cloud" + str(cl) + ".kill()\n\twhencollected()\n"
+        cloudupdate += "cloud" + str(cl) + ".update()\n"
+        enemycollide += "if pygame.sprite.spritecollideany(enemy, clouds" + str(cl) + "):\n\t" \
+                        "cloud" + str(cl) + ".kill()\n"
+    print(enemycollide)
 
     pygame.time.set_timer(ADDENEMY, 300)
-    pygame.time.set_timer(ADDCLOUD, 5000)
-    pygame.time.set_timer(ADDCLOUD2, 5200)
-    pygame.time.set_timer(ADDCLOUD3, 5400)
-    pygame.time.set_timer(ADDCLOUD4, 5600)
-    pygame.time.set_timer(ADDCLOUD5, 5800)
-    pygame.time.set_timer(ADDCLOUD6, 6000)
-    pygame.time.set_timer(ADDCLOUD7, 6200)
-    pygame.time.set_timer(ADDCLOUD8, 6400)
-    pygame.time.set_timer(ADDCLOUD9, 6600)
-    pygame.time.set_timer(ADDCLOUD10, 6800)
-    pygame.time.set_timer(ADDCLOUD11, 7000)
     pygame.time.set_timer(CLOUDKILL, 40)
     pygame.time.set_timer(UPDATESPEED, 18000)
 
@@ -205,30 +210,8 @@ def startgame():
 
     player = Player()
     enemy = Enemy()
-    cloud = Cloud()
-    cloud2 = Cloud()
-    cloud3 = Cloud()
-    cloud4 = Cloud()
-    cloud5 = Cloud()
-    cloud6 = Cloud()
-    cloud7 = Cloud()
-    cloud8 = Cloud()
-    cloud9 = Cloud()
-    cloud10 = Cloud()
-    cloud11 = Cloud()
 
     enemies = pygame.sprite.Group()
-    clouds = pygame.sprite.Group()
-    clouds2 = pygame.sprite.Group()
-    clouds3 = pygame.sprite.Group()
-    clouds4 = pygame.sprite.Group()
-    clouds5 = pygame.sprite.Group()
-    clouds6 = pygame.sprite.Group()
-    clouds7 = pygame.sprite.Group()
-    clouds8 = pygame.sprite.Group()
-    clouds9 = pygame.sprite.Group()
-    clouds10 = pygame.sprite.Group()
-    clouds11 = pygame.sprite.Group()
 
     all_sprites = pygame.sprite.Group()
     all_sprites.add(player)
@@ -265,87 +248,12 @@ def startgame():
                 enemy = Enemy()
                 enemies.add(enemy)
                 all_sprites.add(enemy)
-            if event.type == ADDCLOUD:
-                cloud = Cloud()
-                clouds.add(cloud)
-                all_sprites.add(cloud)
-            if event.type == ADDCLOUD2:
-                cloud2 = Cloud()
-                clouds2.add(cloud2)
-                all_sprites.add(cloud2)
-            if event.type == ADDCLOUD3:
-                cloud3 = Cloud()
-                clouds3.add(cloud3)
-                all_sprites.add(cloud3)
-            if event.type == ADDCLOUD4:
-                cloud4 = Cloud()
-                clouds4.add(cloud4)
-                all_sprites.add(cloud4)
-            if event.type == ADDCLOUD5:
-                cloud5 = Cloud()
-                clouds5.add(cloud5)
-                all_sprites.add(cloud5)
-            if event.type == ADDCLOUD6:
-                cloud6 = Cloud()
-                clouds6.add(cloud6)
-                all_sprites.add(cloud6)
-            if event.type == ADDCLOUD7:
-                cloud7 = Cloud()
-                clouds7.add(cloud7)
-                all_sprites.add(cloud7)
-            if event.type == ADDCLOUD8:
-                cloud8 = Cloud()
-                clouds8.add(cloud8)
-                all_sprites.add(cloud8)
-            if event.type == ADDCLOUD9:
-                cloud9 = Cloud()
-                clouds9.add(cloud9)
-                all_sprites.add(cloud9)
-            if event.type == ADDCLOUD10:
-                cloud10 = Cloud()
-                clouds10.add(cloud10)
-                all_sprites.add(cloud10)
-            if event.type == ADDCLOUD11:
-                cloud11 = Cloud()
-                clouds11.add(cloud11)
-                all_sprites.add(cloud11)
+            exec(infloop.strip())
             if event.type == CLOUDKILL:
-                if pygame.sprite.spritecollideany(player, clouds):
-                    cloud.kill()
-                    whencollected()
-                if pygame.sprite.spritecollideany(player, clouds2):
-                    cloud2.kill()
-                    whencollected()
-                if pygame.sprite.spritecollideany(player, clouds3):
-                    cloud3.kill()
-                    whencollected()
-                if pygame.sprite.spritecollideany(player, clouds4):
-                    cloud4.kill()
-                    whencollected()
-                if pygame.sprite.spritecollideany(player, clouds5):
-                    cloud5.kill()
-                    whencollected()
-                if pygame.sprite.spritecollideany(player, clouds6):
-                    cloud6.kill()
-                    whencollected()
-                if pygame.sprite.spritecollideany(player, clouds7):
-                    cloud7.kill()
-                    whencollected()
-                if pygame.sprite.spritecollideany(player, clouds8):
-                    cloud8.kill()
-                    whencollected()
-                if pygame.sprite.spritecollideany(player, clouds9):
-                    cloud9.kill()
-                    whencollected()
-                if pygame.sprite.spritecollideany(player, clouds10):
-                    cloud10.kill()
-                    whencollected()
-                if pygame.sprite.spritecollideany(player, clouds11):
-                    cloud11.kill()
-                    whencollected()
+                exec(cloudkillloop.strip())
             if event.type == pygame.USEREVENT:
                 counter += 1
-                timer = str(counter).rjust(3) if counter > 0 else 'Boom!'
+                timer = str(counter).rjust(3)
             if event.type == UPDATESPEED:
                 if asprspeed < 40 and playerspeed < 40:
                     asprspeed += 1
@@ -354,18 +262,7 @@ def startgame():
         prsdkeys = pygame.key.get_pressed()
         player.update(prsdkeys)
         enemies.update()
-        clouds.update()
-        clouds2.update()
-        clouds3.update()
-        clouds4.update()
-        clouds5.update()
-        clouds6.update()
-        clouds7.update()
-        clouds8.update()
-        clouds9.update()
-        clouds10.update()
-        clouds11.update()
-
+        exec(cloudupdate.strip())
         screen.fill('#87807E')
 
         if bgfnd:
@@ -381,28 +278,7 @@ def startgame():
         if pygame.sprite.spritecollideany(player, enemies):
             player.kill()
             run = False
-        if pygame.sprite.spritecollideany(enemy, clouds):
-            cloud.kill()
-        if pygame.sprite.spritecollideany(enemy, clouds2):
-            cloud2.kill()
-        if pygame.sprite.spritecollideany(enemy, clouds3):
-            cloud3.kill()
-        if pygame.sprite.spritecollideany(enemy, clouds4):
-            cloud4.kill()
-        if pygame.sprite.spritecollideany(enemy, clouds5):
-            cloud5.kill()
-        if pygame.sprite.spritecollideany(enemy, clouds6):
-            cloud6.kill()
-        if pygame.sprite.spritecollideany(enemy, clouds7):
-            cloud7.kill()
-        if pygame.sprite.spritecollideany(enemy, clouds8):
-            cloud8.kill()
-        if pygame.sprite.spritecollideany(enemy, clouds9):
-            cloud9.kill()
-        if pygame.sprite.spritecollideany(enemy, clouds10):
-            cloud10.kill()
-        if pygame.sprite.spritecollideany(enemy, clouds11):
-            cloud11.kill()
+        exec(enemycollide.strip())
 
         screen.blit(font.render(timer, True, 'white'), (32, 48))
         score = str(gscore).rjust(3)
@@ -412,7 +288,7 @@ def startgame():
         screen.blit(font.render("Volume " + open(os.getenv('APPDATA') + "\\TrannosRun\\volume.info").read().strip()
                                 + "%", True, '#00ffff'), (screen_width - 190, screen_height - 80))
         pygame.display.flip()
-        clock.tick(90)
+        clock.tick(60)
 
     if not run:
         with open(scorecoords, 'w') as f2:
