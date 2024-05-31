@@ -1,6 +1,7 @@
 import os
 import random
 from sys import exit
+import string
 import urllib.request
 from contextlib import redirect_stdout
 from tkinter import *
@@ -316,7 +317,7 @@ def startgame():
         hwid = "trlb:" + subprocess.check_output('wmic csproduct get uuid').split(b'\n')[1].strip().decode()
         r = redis.Redis(host=,
                         port=,
-                        decode_responses=True,
+                        decode_responses=,
                         password=)
 
         try:
@@ -467,20 +468,25 @@ def startgame():
 
             def hasname(nest):
                 canuse = False
+                nesteduse = False
                 with redirect_stdout(open(os.devnull, "w")):
                     print(nest)
                 try:
                     with redirect_stdout(open(os.devnull, "w")):
-                        print(etr.get()[20])
-                    showerror("Try again.", "You have exceeded the 20 character limit!")
+                        print(etr.get()[13])
+                    showerror("Try again.", "You have exceeded the 13 character limit!")
                 except IndexError:
                     for item in r.keys():
-                        if etr.get().strip() == item.split("¶")[0]:
-                            showerror("Try again.", "This user already exists.")
+                        for char in list(str(item).lower()):
+                            if char not in string.ascii_lowercase + string.digits:
+                                showerror("Try again.", "You have used a banned character.")
+                                nesteduse = True
+                                break
+                        if nesteduse:
                             canuse = False
                             break
-                        elif "¶" in etr.get().strip() or " " in etr.get().strip():
-                            showerror("Try again.", "You have used a banned character.")
+                        if etr.get().strip().lower() == item.split("¶")[0]:
+                            showerror("Try again.", "This user already exists.")
                             canuse = False
                             break
                         canuse = True
