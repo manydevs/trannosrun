@@ -18,4 +18,4 @@ git clone https://github.com/manydevs/trannosrun.git
 or by clicking the download link:
 https://github.com/manydevs/trannosrun/archive/refs/heads/main.zip
 
-###### Disclaimer: ManyDevs are not affiliated with Trapsion / Capital Music or Trannos. Every asset that the game uses is publicly available and can be downloaded by anyone.
+###### Disclaimer: ManyDevs is not affiliated with Trapsion Entertainment, No Cap Label or Capital Music. Every asset that the game uses is publicly available and can be downloaded by anyone.
