@@ -228,9 +228,13 @@ def wincenter(query):
     y = screen_height / 2 - windowsize[1] / 2
     query.update()
     query.geometry("+%d+%d" % (x, y))
-    query.after(10, lambda: query.attributes('-topmost', True))
-    query.after(20, lambda: query.attributes('-topmost', False))
-    query.after(30, lambda: query.focus_force())
+    # noinspection PyBroadException
+    try:
+        query.after(10, lambda: query.attributes('-topmost', True))
+        query.after(20, lambda: query.attributes('-topmost', False))
+        query.after(30, lambda: query.focus_force())
+    except TclError:
+        pass
 
 
 # noinspection PyBroadException
@@ -282,8 +286,8 @@ def startgame():
     playerspeed = 600
 
     try:
-        pgame.update()
         pgame.destroy()
+        pgame.quit()
     except (RuntimeError, TclError):
         pass
     gscore, intg = 0, 0
@@ -444,7 +448,6 @@ def startgame():
                 if event.key == K_g:
                     skiptrack = True
             elif event.type == QUIT:
-                endgame()
                 run = False
 
             if event.type == ADDENEMY:
@@ -603,15 +606,15 @@ Tab - TrannosRun Leaderboards
             while not run:
                 try:
                     pgame.state()
-                    temp = lbl['text']
+                    temp = [nowplaying, trackvol]
                     sleep(0.05)
-                    if temp != lbl['text']:
+                    if temp != [nowplaying, trackvol]:
                         btnhelp.grid_forget()
                         btnhelp.grid(column=0, row=2, sticky=N, ipadx=127)
                         pgame.after(55, lambda: btnhelp.grid(column=0, row=2, sticky=N,
                                                              ipadx=pgame.winfo_width() // 2 - 79))
-                    lbl.configure(text="Now playing: " + nowplaying + " | Volume " + str(trackvol) + "%")
-                    lbl.update()
+                        lbl.configure(text="Now playing: " + nowplaying + " | Volume " + str(trackvol) + "%")
+                        lbl.update()
                 except TclError:
                     pass
 
@@ -621,6 +624,7 @@ Tab - TrannosRun Leaderboards
             with redirect_stdout(open(os.devnull, "w")):
                 print(evnt)
             startgame()
+            return "break"
 
         def tkvolup(evnt):
             global trackvol, volaction, appdatapath
@@ -648,10 +652,6 @@ Tab - TrannosRun Leaderboards
             global skiptrack
             with redirect_stdout(open(os.devnull, "w")):
                 print(evnt)
-            btnhelp.grid_forget()
-            btnhelp.grid(column=0, row=2, sticky=N, ipadx=127)
-            pgame.after(55, lambda: btnhelp.grid(column=0, row=2, sticky=N,
-                                                 ipadx=pgame.winfo_width() // 2 - 79))
             skiptrack = True
 
         def tktooltip(evnt):
@@ -768,6 +768,8 @@ Tab - TrannosRun Leaderboards
                                       bg="#87807E", font="Consolas 12").grid(column=2, row=ind + 2)
                             except IndexError:
                                 break
+                            if not run:
+                                break
                         waitwin.destroy()
                     except redis.exceptions.ConnectionError:
                         showerror("No internet connection",
@@ -805,6 +807,7 @@ Tab - TrannosRun Leaderboards
                     showerror("Connection rejected", "This version of TrannosRun is older than the current one.\n"
                                                      "The Leaderboards window will now close.")
                     trlb.destroy()
+            return "break"
 
         pgame.bind("<space>", playonenter)
         pgame.bind("c", tkvolup)
