@@ -53,11 +53,13 @@ if getattr(system, 'frozen', False):
                                                    "The new version of the game functions from a "
                                                    "single executable, meaning that there is no need to keep "
                                                    "TrannosRun installed as an app.\n\n"
-                                                   "It is recommended that you use Add/Remove Programs to uninstall "
-                                                   "TrannosRun.\n\n"
+                                                   "It is recommended that you uninstall TrannosRun using "
+                                                   "its uninstaller (unins000.exe) and then "
+                                                   "delete the %LocalAppData%\\Programs\\TrannosRun"
+                                                   "folder (to delete the old track library).\n\n"
                                                    "Please download TrannosRun again from the ManyDevs' GitHub page "
                                                    "or TrannosRun's itch.io page.")
-        os.system(r'cmd /c "start /b appwiz.cpl"')
+        os.system('explorer /select,"' + os.path.abspath(os.path.join(thispath, os.pardir)) + '"')
         os.system(r'cmd /c "start /b https://github.com/manydevs/trannosrun/releases/latest"')
         os._exit(0)
 
