@@ -167,8 +167,6 @@ dfstdout = system.stdout
 dfstderr = system.stderr
 
 RPC = pypresence.Presence(982695479731191878)
-
-# Use your own credentials for the Redis database here
 r = redis.Redis(host=,
                 port=,
                 decode_responses=,
@@ -188,8 +186,7 @@ if not os.path.isfile(highscorecoords):
 
 def endgame():
     global loop, pgame
-    pgame.update()
-    pgame.destroy()
+    pgame.quit()
     ctypes.windll.kernel32.FreeConsole()
     loop = False
     try:
@@ -615,7 +612,7 @@ Tab - TrannosRun Leaderboards
                                                              ipadx=pgame.winfo_width() // 2 - 79))
                         lbl.configure(text="Now playing: " + nowplaying + " | Volume " + str(trackvol) + "%")
                         lbl.update()
-                except TclError:
+                except (TclError, RuntimeError):
                     pass
 
         Thread(target=updatetracks).start()
@@ -658,8 +655,7 @@ Tab - TrannosRun Leaderboards
             global appdatapath, loop
             with redirect_stdout(open(os.devnull, "w")):
                 print(evnt)
-            pgame.update()
-            pgame.destroy()
+            pgame.withdraw()
             loop = False
             gui()
 
@@ -842,6 +838,7 @@ def music():
             while loop:
                 while player.get_state() not in [vlc.State.Ended,
                                                  vlc.State.Stopped] and player.get_state() != vlc.State.Ended:
+                    sleep(0.01)
                     if volaction:
                         vlc.libvlc_audio_set_volume(player, trackvol)
                         volaction = False
@@ -946,9 +943,9 @@ def gettracks():
 
 
 def gui():
-    global loop
+    global loop, pgame
 
-    selgui = Tk()
+    selgui = Toplevel(pgame)
     selgui.resizable(False, False)
     frm = Frame(selgui, bg='#87807E')
     frm.pack(fill=BOTH, expand=1)
@@ -1016,16 +1013,15 @@ def gui():
             if int(globals()["int" + str(soundfiles.index(d) + 3)].get()) == 1 and "#" in d:
                 os.rename(soundloc + "\\" + d + ".ogg", soundloc + "\\" + d.replace("#", "") + ".ogg")
         selgui.destroy()
+        selgui.quit()
         loop = True
         Thread(target=music).start()
-        Thread(target=discord).start()
         startgame()
 
     selgui.protocol("WM_DELETE_WINDOW", yes)
     selb.configure(command=usl)
     confb.configure(command=yes)
     cnv.create_window((0, 0), window=mainframe, anchor="nw")
-    selgui.mainloop()
 
 
 try:
