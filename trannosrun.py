@@ -939,6 +939,8 @@ def gettracks():
     with redirect_stdout(open(appdatapath + "soundver.info", 'w')):
         print(sv)
     hideconsole()
+    pgame = Tk()
+    pgame.withdraw()
     gui()
 
 
