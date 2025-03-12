@@ -1030,22 +1030,23 @@ def gui():
 try:
     response = requests.get("https://api.github.com/repos/manydevs/trannosrun/releases/latest")
     trver = (response.json()["name"]).replace("TrannosRun ", "")
-    if not curver == trver:
-        if askyesno("Updates available", "TrannosRun detected it has updates available.\nCurrent version: "
-                                         + curver + "\nNew version: " + trver + "\nDo you want to download them?"):
-            showconsole()
-            with TqdmUpTo(unit='B', unit_scale=True, unit_divisor=1024, miniters=1,
-                          desc="trannosrun-v" + trver + ".exe") as t:
-                getfile(
-                    response.json()["assets"][0]["browser_download_url"],
-                    filename=thispath + "\\trannosrun-v" + trver + ".exe",
-                    reporthook=t.update_to,
-                    data=None
-                )
-                t.total = t.n
-            hideconsole()
-            os.system('explorer /select,"' + thispath + '"')
-            os._exit(0)
+    if not curver == trver and askyesno("Updates available", "TrannosRun detected it has updates available."
+                                                             "\nCurrent version: " + curver +
+                                                             "\nNew version: " + trver +
+                                                             "\nDo you want to download them?"):
+        showconsole()
+        with TqdmUpTo(unit='B', unit_scale=True, unit_divisor=1024, miniters=1,
+                      desc="trannosrun-v" + trver + ".exe") as t:
+            getfile(
+                response.json()["assets"][0]["browser_download_url"],
+                filename=thispath + "\\trannosrun-v" + trver + ".exe",
+                reporthook=t.update_to,
+                data=None
+            )
+            t.total = t.n
+        hideconsole()
+        os.system('explorer /select,"' + thispath + '"')
+        os._exit(0)
     else:
         soundver = int(requests.get(
             'https://raw.githubusercontent.com/manydevs/trannosrun/refs/heads/main/soundlib.txt')
