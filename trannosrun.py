@@ -1024,6 +1024,7 @@ def gui():
     selb.configure(command=usl)
     confb.configure(command=yes)
     cnv.create_window((0, 0), window=mainframe, anchor="nw")
+    selgui.mainloop()
 
 
 try:
