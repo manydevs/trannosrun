@@ -764,7 +764,7 @@ Tab - TrannosRun Leaderboards
                                       bg="#87807E", font="Consolas 12").grid(column=2, row=ind + 2)
                             except IndexError:
                                 break
-                            if not run:
+                            if run:
                                 break
                         waitwin.destroy()
                     except redis.exceptions.ConnectionError:
