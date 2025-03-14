@@ -349,7 +349,9 @@ def startgame():
             if self.rect.left < 80:
                 self.kill()
 
-    pygame.init()
+    pygame.display.init()
+    pygame.font.init()
+    pygame.mixer.init()
 
     counter, timer, score = 0, '0'.rjust(3), '0'.rjust(3)
     pygame.time.set_timer(pygame.USEREVENT, 1000)
