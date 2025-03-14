@@ -18,11 +18,14 @@ View the full track list [here](https://github.com/manydevs/trannosrun/blob/main
   https://github.com/manydevs/trannosrun/archive/refs/heads/main.zip
   
 - Fill in the Redis database information in line 170 of trannosrun.py
+
+- Download [UPX](https://github.com/upx/upx/releases/latest)
   
 - Open a console window in the project's root directory and run:
   ```batch
   pip install requirements.txt
-  python -m PyInstaller --onefile --windowed --hidden-import=pypresence --hidden-import=tqdm --hidden-import=requests --hidden-import=python-vlc --hidden-import=redis --hidden-import=pygame --add-data "assets\\bg.jpg;assets" --add-data "assets\\gani.png;assets" --add-data "assets\\mavro_jet.ico;assets" --add-data "assets\\mavro_jet.png;assets" --add-data "assets\\tseoi.png;assets" --add-data "assets\\xamene.png;assets" --add-data "assets\\collect.wav;assets" --upx-dir "D:\Data\Projects\pyProjects\tr2\upx-5.0.0-win64\upx.exe" --icon="packico.ico" --splash=splash.png trannosrun.py
+  set UPXPATH=(path to upx.exe here)
+  python -m PyInstaller --onefile --windowed --hidden-import=pypresence --hidden-import=tqdm --hidden-import=requests --hidden-import=python-vlc --hidden-import=redis --hidden-import=pygame --add-data "assets\\bg.jpg;assets" --add-data "assets\\gani.png;assets" --add-data "assets\\mavro_jet.ico;assets" --add-data "assets\\mavro_jet.png;assets" --add-data "assets\\tseoi.png;assets" --add-data "assets\\xamene.png;assets" --add-data "assets\\collect.wav;assets" --upx-dir %UPXPATH% --icon="packico.ico" --splash=splash.png trannosrun.py
   ```
   
 
