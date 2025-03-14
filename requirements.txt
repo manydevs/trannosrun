@@ -1,0 +1,7 @@
+pyinstaller
+pypresence
+tqdm
+pygame
+python-vlc
+redis
+requests
