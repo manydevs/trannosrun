@@ -130,18 +130,35 @@ class DEVMODE(ctypes.Structure):
     ]
 
 
-GetVolumeInformationW = ctypes.WinDLL("Kernel32.dll").GetVolumeInformationW
+volume_serial = ctypes.wintypes.DWORD()
+max_component_length = ctypes.wintypes.DWORD()
+fs_flags = ctypes.wintypes.DWORD()
+volume_name_buffer = ctypes.create_unicode_buffer(261)
+fs_name_buffer = ctypes.create_unicode_buffer(261)
+
+GetVolumeInformationW = ctypes.windll.kernel32.GetVolumeInformationW
 GetVolumeInformationW.argtypes = [
     ctypes.wintypes.LPCWSTR,
-    ctypes.wintypes.LPWSTR, ctypes.c_uint32,
+    ctypes.wintypes.LPWSTR, ctypes.wintypes.DWORD,
     ctypes.POINTER(ctypes.wintypes.DWORD),
     ctypes.POINTER(ctypes.wintypes.DWORD),
     ctypes.POINTER(ctypes.wintypes.DWORD),
-    ctypes.wintypes.LPWSTR, ctypes.c_uint32,
+    ctypes.wintypes.LPWSTR, ctypes.wintypes.DWORD
 ]
 GetVolumeInformationW.restype = ctypes.wintypes.BOOL
-volume_serial = ctypes.wintypes.DWORD(0)
-ishwid = GetVolumeInformationW(os.getenv('SYSTEMDRIVE'), None, 0, ctypes.byref(volume_serial), None, None, None, 0)
+
+drive = os.getenv('SYSTEMDRIVE')
+if not drive.endswith('\\'):
+    drive += '\\'
+
+ishwid = GetVolumeInformationW(
+    drive,
+    volume_name_buffer, ctypes.sizeof(volume_name_buffer),
+    ctypes.byref(volume_serial),
+    ctypes.byref(max_component_length),
+    ctypes.byref(fs_flags),
+    fs_name_buffer, ctypes.sizeof(fs_name_buffer)
+)
 
 if ishwid:
     hwid = "trlb:" + str(uuid.UUID(hex=hashlib.md5(str(volume_serial.value).encode("UTF-8")).hexdigest()))
@@ -512,7 +529,7 @@ def startgame():
         tempscore = int(open(highscorecoords, 'r').read())
         if 0 == tempscore:
             Label(pgame, text="(Tip: Press Spacebar to play again)", background='#87807E',
-                  font=('Consolas', 14, "bold"), foreground='#ffff00').pack()
+                  font=('Consolas', 14, "bold"), foreground='#ffff00').grid(column=0, row=0)
         if tempscore < gscore:
             endtext = "New high score: " + str(gscore)
             with redirect_stdout(open(highscorecoords, 'w')):
@@ -547,18 +564,18 @@ def startgame():
             Thread(target=checklb).start()
 
         wp = Label(pgame, text="Well played!", background='#87807E', font='Consolas 25 bold', foreground='#000000')
-        wp.grid(column=0, row=0, sticky=N)
+        wp.grid(column=0, row=1, sticky=N)
 
         wp2 = Label(pgame, text=endtext, background='#87807E', font=('Consolas', 12, "bold"), foreground='#000000')
-        wp2.grid(column=0, row=1)
+        wp2.grid(column=0, row=2)
 
         xamenosprep = PhotoImage(file=thepath + 'xamene.png')
         xamenos = Label(pgame, image=xamenosprep, background='#87807E')
-        xamenos.grid(column=0, row=3, sticky=N)
+        xamenos.grid(column=0, row=4, sticky=N)
 
         lbl = Label(pgame, text="Now playing: " + nowplaying + " | Volume " + str(trackvol) + "%",
                     background='#87807E', font=('Consolas', 9, "bold"), foreground='#000000')
-        lbl.grid(column=0, row=4, sticky=N)
+        lbl.grid(column=0, row=5, sticky=N)
 
         def helpwin():
             hlp = Toplevel(pgame)
@@ -593,8 +610,8 @@ Tab - TrannosRun Leaderboards
 
         btnhelp = Button(pgame, text="Click for controls...", command=helpwin,
                          background='#87807E', font=('Consolas', 9, "bold"), foreground='#000000')
-        btnhelp.grid(column=0, row=2, sticky=N, ipadx=127)
-        pgame.after(1, lambda: btnhelp.grid(column=0, row=2, sticky=N,
+        btnhelp.grid(column=0, row=3, sticky=N, ipadx=127)
+        pgame.after(1, lambda: btnhelp.grid(column=0, row=3, sticky=N,
                                             ipadx=pgame.winfo_width() // 2 - 79))
 
         wincenter(pgame)
@@ -607,8 +624,8 @@ Tab - TrannosRun Leaderboards
                     sleep(0.05)
                     if temp != [nowplaying, trackvol]:
                         btnhelp.grid_forget()
-                        btnhelp.grid(column=0, row=2, sticky=N, ipadx=127)
-                        pgame.after(55, lambda: btnhelp.grid(column=0, row=2, sticky=N,
+                        btnhelp.grid(column=0, row=3, sticky=N, ipadx=127)
+                        pgame.after(55, lambda: btnhelp.grid(column=0, row=3, sticky=N,
                                                              ipadx=pgame.winfo_width() // 2 - 79))
                         lbl.configure(text="Now playing: " + nowplaying + " | Volume " + str(trackvol) + "%")
                         lbl.update()
