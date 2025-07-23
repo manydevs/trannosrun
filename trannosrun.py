@@ -367,41 +367,47 @@ def startgame():
                 self.kill()
 
     pygame.init()
+    screen = pygame.display.set_mode((screen_width, screen_height))
+
+    pygame.display.set_caption('TrannosRun ' + curver.replace("v", ""))
+    pygame.display.set_icon(pygame.image.load(thepath + 'mavro_jet.ico'))
+
+    player = Player()
+    enemy = Enemy()
+
+    enemies = pygame.sprite.Group()
+
+    all_sprites = pygame.sprite.Group()
+    all_sprites.add(player)
 
     counter, timer, score = 0, '0'.rjust(3), '0'.rjust(3)
     pygame.time.set_timer(pygame.USEREVENT, 1000)
     font = pygame.font.SysFont('Consolas', 30)
-    guncount = int(round((screen_width * screen_height) / 148114))
-    if guncount == 0:
-        showerror("Low screen resolution", "The screen resolution is too low.\nTrannosRun will now exit.")
-        endgame()
 
     ADDENEMY = pygame.USEREVENT + 1
     CLOUDKILL = pygame.USEREVENT + 2
     UPDATESPEED = pygame.USEREVENT + 3
-    interval = 0
-    infloop = ""
-    cloudkillloop = ""
-    cloudupdate = ""
-    enemycollide = ""
 
-    for cl in range(guncount):
-        globals()["ADDCLOUD" + str(cl)] = pygame.USEREVENT + (4 + cl)
-        pygame.time.set_timer(globals()["ADDCLOUD" + str(cl)], 5000 + interval)
-        interval += 200
-        globals()["cloud" + str(cl)] = Cloud()
-        globals()["clouds" + str(cl)] = pygame.sprite.Group()
-        infloop += "if event.type == ADDCLOUD" + str(cl) + ":\n\t" \
-                                                           "cloud" + str(cl) + " = Cloud()\n\t" \
-                                                                               "clouds" + str(cl) + ".add(cloud" + str(
-            cl) + ")\n\t" \
-                  "all_sprites.add(cloud" + str(cl) + ")\n"
-        cloudkillloop += "if pygame.sprite.spritecollideany(player, clouds" + str(cl) + "):\n\t" \
-                                                                                        "cloud" + str(
-            cl) + ".kill()\n\twhencollected()\n"
-        cloudupdate += "cloud" + str(cl) + ".update()\n"
-        enemycollide += "if pygame.sprite.spritecollideany(enemy, clouds" + str(cl) + "):\n\t" \
-                                                                                      "cloud" + str(cl) + ".kill()\n"
+    guncount = int(str(screen_height).zfill(4)[:2])
+
+    CLOUD_RESPAWN_MIN = 1600
+    CLOUD_RESPAWN_MAX = 3200
+    clouds = [None] * guncount
+    cloud_groups = [pygame.sprite.Group() for _ in range(guncount)]
+    cloud_death_times = [pygame.time.get_ticks()] * guncount
+    cloud_respawn_delays = [random.randint(CLOUD_RESPAWN_MIN, CLOUD_RESPAWN_MAX) for _ in range(guncount)]
+
+    for i in range(guncount):
+        cloud = Cloud()
+        cloud.kill()
+        try:
+            cloud.surf.set_alpha(0)
+        except AttributeError:
+            pass
+        group = pygame.sprite.Group(cloud)
+        clouds.append(cloud)
+        cloud_groups.append(group)
+        all_sprites.add(cloud)
 
     pygame.time.set_timer(ADDENEMY, 300)
     pygame.time.set_timer(CLOUDKILL, 40)
@@ -415,18 +421,6 @@ def startgame():
         bg_img = ""
         bgfnd = False
 
-    screen = pygame.display.set_mode((screen_width, screen_height))
-
-    pygame.display.set_caption('TrannosRun ' + curver.replace("v", ""))
-    pygame.display.set_icon(pygame.image.load(thepath + 'mavro_jet.ico'))
-
-    player = Player()
-    enemy = Enemy()
-
-    enemies = pygame.sprite.Group()
-
-    all_sprites = pygame.sprite.Group()
-    all_sprites.add(player)
     run = True
     pygame.mixer.init()
 
@@ -468,9 +462,27 @@ def startgame():
                 enemy = Enemy()
                 enemies.add(enemy)
                 all_sprites.add(enemy)
-            exec(infloop.strip())
             if event.type == CLOUDKILL:
-                exec(cloudkillloop.strip())
+                now = pygame.time.get_ticks()
+                for i in range(guncount):
+                    group = cloud_groups[i]
+                    cloud = clouds[i]
+                    if cloud and cloud.alive():
+                        if pygame.sprite.spritecollideany(player, group):
+                            cloud.kill()
+                            whencollected()
+                            cloud_death_times[i] = now
+                            cloud_respawn_delays[i] = random.randint(CLOUD_RESPAWN_MIN, CLOUD_RESPAWN_MAX)
+                        elif pygame.sprite.spritecollideany(enemy, group):
+                            cloud.kill()
+                            cloud_death_times[i] = now
+                            cloud_respawn_delays[i] = random.randint(CLOUD_RESPAWN_MIN, CLOUD_RESPAWN_MAX)
+                    elif now - cloud_death_times[i] >= cloud_respawn_delays[i]:
+                        newcloud = Cloud()
+                        clouds[i] = newcloud
+                        group.add(newcloud)
+                        all_sprites.add(newcloud)
+
             if event.type == pygame.USEREVENT:
                 counter += 1
                 timer = str(counter).rjust(3)
@@ -482,7 +494,12 @@ def startgame():
         prsdkeys = pygame.key.get_pressed()
         player.update(prsdkeys)
         enemies.update()
-        exec(cloudupdate.strip())
+        for cloud in clouds:
+            try:
+                if cloud.alive():
+                    cloud.update()
+            except AttributeError:
+                pass
         screen.fill('#87807E')
 
         if bgfnd:
@@ -498,7 +515,6 @@ def startgame():
         if pygame.sprite.spritecollideany(player, enemies):
             player.kill()
             run = False
-        exec(enemycollide.strip())
 
         screen.blit(font.render(timer, True, 'white'), (32, 48))
         score = str(gscore).rjust(3)
