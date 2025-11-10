@@ -14,6 +14,7 @@ import uuid
 import hashlib
 import pygame
 import redis
+import base64
 from time import (sleep, time)
 from threading import Thread
 import pypresence
@@ -166,6 +167,7 @@ else:
     hwid = "err"
     showwarning("Could not identify this PC",
                 "TrannosRun could not identify your PC in order to communicate with the TrannosRun Leaderboards.")
+    showinfo(str(ishwid), str(uuid.UUID(hex=hashlib.md5(str(volume_serial.value).encode("UTF-8")).hexdigest())))
 
 devmode = DEVMODE()
 devmode.dmSize = ctypes.sizeof(DEVMODE)
@@ -189,7 +191,7 @@ r = redis.Redis(host=,
                 decode_responses=,
                 password=)
 
-gscore, connfail, curver = 0, False, "v1.1.0"
+gscore, connfail, curver = 0, False, "v1.1.2"
 pgame = Tk()
 screen_width, screen_height = int(pgame.winfo_screenwidth()), int(pgame.winfo_screenheight())
 pgame.update()
@@ -937,7 +939,7 @@ tracklinks, tracklist = list(), list()
 
 
 def gettracks():
-    global tracklinks, tracklist
+    global tracklinks, tracklist, pgame
 
     showconsole()
     temp = requests.get(
@@ -1069,16 +1071,16 @@ try:
                                                              "\nDo you want to download them?"):
         showconsole()
         with TqdmUpTo(unit='B', unit_scale=True, unit_divisor=1024, miniters=1,
-                      desc="trannosrun-v" + trver + ".exe") as t:
+                      desc="trannosrun-" + trver + ".exe") as t:
             getfile(
                 response.json()["assets"][0]["browser_download_url"],
-                filename=thispath + "\\trannosrun-v" + trver + ".exe",
+                filename=thispath + "\\trannosrun-" + trver + ".exe",
                 reporthook=t.update_to,
                 data=None
             )
             t.total = t.n
         hideconsole()
-        os.system('explorer /select,"' + thispath + '"')
+        os.system('explorer /select,"' + thispath + "\\trannosrun-" + trver + ".exe" + '"')
         os._exit(0)
     else:
         soundver = int(requests.get(
@@ -1094,6 +1096,7 @@ try:
             Thread(target=music).start()
             Thread(target=discord).start()
             startgame()
+        print(soundver)
 except requests.exceptions.ConnectionError:
     Thread(target=music).start()
     Thread(target=discord).start()
