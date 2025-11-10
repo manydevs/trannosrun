@@ -14,7 +14,6 @@ import uuid
 import hashlib
 import pygame
 import redis
-import base64
 from time import (sleep, time)
 from threading import Thread
 import pypresence
@@ -1115,3 +1114,4 @@ except KeyError:
         Thread(target=music).start()
         Thread(target=discord).start()
         startgame()
+
