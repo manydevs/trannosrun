@@ -5,7 +5,7 @@ import string
 from urllib.request import urlretrieve as getfile
 from contextlib import redirect_stdout
 from tkinter import *
-from tkinter.filedialog import (askopenfilename, askdirectory)
+from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import (askyesno, showinfo, askyesnocancel, showerror, showwarning)
 import requests
 import ctypes
@@ -190,7 +190,7 @@ r = redis.Redis(host=,
                 decode_responses=,
                 password=)
 
-gscore, connfail, curver = 0, False, "v1.1.2"
+gscore, connfail, curver = 0, False, "v1.1.3"
 pgame = Tk()
 screen_width, screen_height = int(pgame.winfo_screenwidth()), int(pgame.winfo_screenheight())
 pgame.update()
@@ -291,14 +291,15 @@ except Exception:
         isvlc = False
 
 
+asprspeed = 400
+playerspeed = 600
 # noinspection PyTypeChecker
 def startgame():
     global gscore, pgame, highscorecoords, displayscore, curver, screen_width, screen_height, thepath, bgi, r, ishwid
     global curver, trver, connfail, nowplaying, trackvol, volaction, skiptrack, rpcupdate, hwid, rf, appdatapath
+    global asprspeed, playerspeed
 
     clock = pygame.time.Clock()
-    asprspeed = 400
-    playerspeed = 600
 
     try:
         pgame.destroy()
@@ -367,6 +368,18 @@ def startgame():
             if self.rect.left < 80:
                 self.kill()
 
+    class RareCloud(pygame.sprite.Sprite):
+        def __init__(self):
+            super(RareCloud, self).__init__()
+            self.surf = pygame.image.load(thepath + 'noz.png')
+            self.surf.set_colorkey((225, 0, 0))
+            self.rect = self.surf.get_rect(center=(screen_width, random.randint(1, screen_height)))
+
+        def update(self):
+            self.rect.x -= asprspeed * dt
+            if self.rect.left < 80:
+                self.kill()
+
     pygame.init()
     screen = pygame.display.set_mode((screen_width, screen_height))
 
@@ -398,6 +411,12 @@ def startgame():
     cloud_death_times = [pygame.time.get_ticks()] * guncount
     cloud_respawn_delays = [random.randint(CLOUD_RESPAWN_MIN, CLOUD_RESPAWN_MAX) for _ in range(guncount)]
 
+    RARECLOUD_CHANCE = 0.0001  # 0.01 is 1%
+    rareclouds = [None] * guncount
+    rarecloud_groups = [pygame.sprite.Group() for _ in range(guncount)]
+    rarecloud_death_times = [pygame.time.get_ticks()] * guncount
+    rarecloud_respawn_delays = [random.randint(CLOUD_RESPAWN_MIN, CLOUD_RESPAWN_MAX) * 3 for _ in range(guncount)]
+
     for i in range(guncount):
         cloud = Cloud()
         cloud.kill()
@@ -409,6 +428,17 @@ def startgame():
         clouds.append(cloud)
         cloud_groups.append(group)
         all_sprites.add(cloud)
+
+        rarecloud = RareCloud()
+        rarecloud.kill()
+        try:
+            rarecloud.surf.set_alpha(0)
+        except AttributeError:
+            pass
+        rare_group = pygame.sprite.Group(rarecloud)
+        rareclouds.append(rarecloud)
+        rarecloud_groups.append(rare_group)
+        all_sprites.add(rarecloud)
 
     pygame.time.set_timer(ADDENEMY, 300)
     pygame.time.set_timer(CLOUDKILL, 40)
@@ -433,6 +463,14 @@ def startgame():
         gscore += 1
         displayscore = gscore
         rpcupdate = True
+
+    def whencollected2():
+        global asprspeed, playerspeed
+        effect = pygame.mixer.Sound(meipath + "\\assets\\rcollect.wav")
+        effect.set_volume(trackvol / 100)
+        effect.play()
+        asprspeed -= 150
+        playerspeed -= 150
 
     while run:
         dt = clock.tick(rf) / 1000
@@ -463,6 +501,7 @@ def startgame():
                 enemy = Enemy()
                 enemies.add(enemy)
                 all_sprites.add(enemy)
+
             if event.type == CLOUDKILL:
                 now = pygame.time.get_ticks()
                 for i in range(guncount):
@@ -484,6 +523,27 @@ def startgame():
                         group.add(newcloud)
                         all_sprites.add(newcloud)
 
+                    rare_group = rarecloud_groups[i]
+                    rarecloud = rareclouds[i]
+                    if rarecloud and rarecloud.alive():
+                        if pygame.sprite.spritecollideany(player, rare_group):
+                            rarecloud.kill()
+                            whencollected2()
+                            rarecloud_death_times[i] = now
+                            rarecloud_respawn_delays[i] = random.randint(CLOUD_RESPAWN_MIN, CLOUD_RESPAWN_MAX) * 3
+                        elif pygame.sprite.spritecollideany(enemy, rare_group):
+                            rarecloud.kill()
+                            rarecloud_death_times[i] = now
+                            rarecloud_respawn_delays[i] = random.randint(CLOUD_RESPAWN_MIN, CLOUD_RESPAWN_MAX) * 3
+                    elif now - rarecloud_death_times[i] >= rarecloud_respawn_delays[i]:
+                        if random.random() < RARECLOUD_CHANCE and asprspeed > 600:
+                            newrare = RareCloud()
+                            rareclouds[i] = newrare
+                            rare_group.add(newrare)
+                            all_sprites.add(newrare)
+                            rarecloud_death_times[i] = now
+                            rarecloud_respawn_delays[i] = random.randint(CLOUD_RESPAWN_MIN, CLOUD_RESPAWN_MAX) * 3
+
             if event.type == pygame.USEREVENT:
                 counter += 1
                 timer = str(counter).rjust(3)
@@ -499,6 +559,12 @@ def startgame():
             try:
                 if cloud.alive():
                     cloud.update()
+            except AttributeError:
+                pass
+        for rarecloud in rareclouds:
+            try:
+                if rarecloud.alive():
+                    rarecloud.update()
             except AttributeError:
                 pass
         screen.fill('#87807E')
@@ -1114,4 +1180,3 @@ except KeyError:
         Thread(target=music).start()
         Thread(target=discord).start()
         startgame()
-
