@@ -307,6 +307,8 @@ def startgame():
     except (RuntimeError, TclError):
         pass
     gscore, intg = 0, 0
+    asprspeed = 400
+    playerspeed = 600
 
     class Player(pygame.sprite.Sprite):
         def __init__(self):
@@ -1180,3 +1182,4 @@ except KeyError:
         Thread(target=music).start()
         Thread(target=discord).start()
         startgame()
+
